@@ -1,0 +1,85 @@
+{
+  "title": "RadiatorSync",
+  "config": {
+    "step": {
+      "user": {
+        "title": "RadiatorSync Setup",
+        "description": "Select your heater and safety timings (anti short-cycling).",
+        "data": {
+          "heater": "Heater switch",
+          "min_on_s": "Minimum heater ON time (seconds)",
+          "min_off_s": "Minimum heater OFF time (seconds)"
+        }
+      },
+      "init": {
+        "title": "RadiatorSync Rooms",
+        "description": "Manage radiator rooms and linked sensors.",
+        "data": {
+          "operation": "Choose an action"
+        }
+      }
+    }
+  },
+  "options": {
+    "abort": {
+      "name_exists": "A room with this name already exists.",
+      "no_rooms": "There are no rooms configured.",
+      "internal_error": "Unexpected internal error."
+    },
+    "step": {
+      "init": {
+        "title": "RadiatorSync Settings",
+        "description": "Manage radiator rooms and linked sensors.",
+        "data": {
+          "operation": "Choose an action"
+        }
+      },
+      "add_room": {
+        "title": "Add a Room",
+        "description": "Create a new radiator-controlled room.",
+        "data": {
+          "name": "Room name",
+          "climate_entity": "Linked climate device",
+          "temperature_sensor": "Temperature sensor",
+          "humidity_sensor": "Humidity sensor (optional)",
+          "hysteresis": "Hysteresis (°C)"
+        }
+      },
+      "edit_room": {
+        "title": "Edit Room",
+        "description": "Select the room you want to modify.",
+        "data": {
+          "name": "Room"
+        }
+      },
+      "edit_room_apply": {
+        "title": "Update Room",
+        "description": "Edit sensors and settings for this room.",
+        "data": {
+          "name": "Room name",
+          "climate_entity": "Linked climate device",
+          "temperature_sensor": "Temperature sensor",
+          "humidity_sensor": "Humidity sensor (optional)",
+          "hysteresis": "Hysteresis (°C)"
+        }
+      },
+      "remove_room": {
+        "title": "Remove Room",
+        "description": "Select which room should be removed.",
+        "data": {
+          "name": "Room"
+        }
+      }
+    }
+  },
+  "selector": {
+    "operation": {
+      "options": {
+        "add_room": "Add room",
+        "edit_room": "Edit room",
+        "remove_room": "Remove room",
+        "finish": "Finish setup"
+      }
+    }
+  }
+}

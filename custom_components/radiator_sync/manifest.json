@@ -1,0 +1,13 @@
+{
+  "name": "Radiator Sync",
+  "domain": "radiator_sync",
+  "version": "0.2.0",
+  "documentation": "https://github.com/zjonn/radiator_sync",
+  "issue_tracker": "https://github.com/zjonn/radiator_sync/issues",
+  "requirements": [],
+  "codeowners": ["@zjonn"],
+  "integration_type": "device",
+  "config_flow": true,
+  "iot_class": "local_push",
+  "loggers": ["custom_components.radiator_sync"]
+}

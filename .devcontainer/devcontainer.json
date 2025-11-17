@@ -1,0 +1,22 @@
+{
+  "name": "Radiator Sync (Home Assistant)",
+  "image": "ghcr.io/home-assistant/devcontainer:stable",
+  "appPort": ["8123:8123"],
+  "postCreateCommand": "bash .devcontainer/post_create.sh",
+  "containerEnv": {
+    "PYTHONPATH": "${containerWorkspaceFolder}",
+    "DEVCONTAINER": "1"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+  "mounts": ["type=volume,source=ha-config,target=/config"],
+  "runArgs": ["--privileged"],
+  "remoteUser": "root"
+}

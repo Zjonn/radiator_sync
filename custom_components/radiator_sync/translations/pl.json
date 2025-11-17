@@ -1,0 +1,85 @@
+{
+  "title": "RadiatorSync",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Konfiguracja RadiatorSync",
+        "description": "Wybierz przełącznik pieca oraz ustaw czasy zabezpieczenia przed częstym przełączaniem.",
+        "data": {
+          "heater": "Przełącznik pieca",
+          "min_on_s": "Minimalny czas pracy pieca (sekundy)",
+          "min_off_s": "Minimalny czas przerwy pieca (sekundy)"
+        }
+      },
+      "init": {
+        "title": "Pokoje RadiatorSync",
+        "description": "Zarządzaj pokojami i powiązanymi czujnikami.",
+        "data": {
+          "operation": "Wybierz działanie"
+        }
+      }
+    }
+  },
+  "options": {
+    "abort": {
+      "name_exists": "Pokój o tej nazwie już istnieje.",
+      "no_rooms": "Nie skonfigurowano żadnych pokoi.",
+      "internal_error": "Wystąpił nieoczekiwany błąd."
+    },
+    "step": {
+      "init": {
+        "title": "Ustawienia RadiatorSync",
+        "description": "Zarządzaj pokojami i powiązanymi czujnikami.",
+        "data": {
+          "operation": "Wybierz działanie"
+        }
+      },
+      "add_room": {
+        "title": "Dodaj pokój",
+        "description": "Utwórz nowy pokój sterowany grzejnikiem.",
+        "data": {
+          "name": "Nazwa pokoju",
+          "climate_entity": "Powiązany termostat",
+          "temperature_sensor": "Czujnik temperatury",
+          "humidity_sensor": "Czujnik wilgotności (opcjonalnie)",
+          "hysteresis": "Histereza (°C)"
+        }
+      },
+      "edit_room": {
+        "title": "Edytuj pokój",
+        "description": "Wybierz pokój do edycji.",
+        "data": {
+          "name": "Pokój"
+        }
+      },
+      "edit_room_apply": {
+        "title": "Aktualizuj pokój",
+        "description": "Edytuj czujniki i ustawienia pokoju.",
+        "data": {
+          "name": "Nazwa pokoju",
+          "climate_entity": "Powiązany termostat",
+          "temperature_sensor": "Czujnik temperatury",
+          "humidity_sensor": "Czujnik wilgotności (opcjonalnie)",
+          "hysteresis": "Histereza (°C)"
+        }
+      },
+      "remove_room": {
+        "title": "Usuń pokój",
+        "description": "Wybierz pokój do usunięcia.",
+        "data": {
+          "name": "Pokój"
+        }
+      }
+    }
+  },
+  "selector": {
+    "operation": {
+      "options": {
+        "add_room": "Dodaj pokój",
+        "edit_room": "Edytuj pokój",
+        "remove_room": "Usuń pokój",
+        "finish": "Zakończ konfigurację"
+      }
+    }
+  }
+}

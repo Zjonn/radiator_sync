@@ -1,5 +1,9 @@
 # Radiator Sync
 
+<p align="center">
+  <img src="assets/logo.png" alt="Radiator Sync logo" width="240">
+</p>
+
 Home Assistant integration that synchronizes a central heater with room thermostats and temperature sensors.
 
 ## Features

@@ -108,6 +108,7 @@ class RadiatorStateManager:
 
         delta = max(0.0, (self._target_temp + self.hysteresis) - self._current_temp)
         return round(min(delta / self.MAX_DELTA, 1.0) * 100.0)
+
     # ----------------------------
     # Temperature & target changes
     # ----------------------------

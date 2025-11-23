@@ -2,13 +2,13 @@ from homeassistant.components.climate import (
     ClimateEntity,
     ClimateEntityFeature,
     HVACMode,
+    HVACAction,
 )
 from homeassistant.const import (
     ATTR_TEMPERATURE,
     UnitOfTemperature,
 )
 from homeassistant.components.sensor import SensorEntity
-from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.const import EntityCategory
 
 
@@ -23,18 +23,15 @@ class RadiatorRoomHeatDemand(SensorEntity):
     def __init__(self, state: RadiatorStateManager):
         self.radiator_state = state
         self._attr_name = f"{state.room_name} Heat Demand"
-        self._attr_unique_id = f"{state.coordinator.entry.entry_id}_heat_demand"
+        self._attr_unique_id = (
+            f"{state.coordinator.entry.entry_id}_{state.room_name}_heat_demand"
+        )
+        self._attr_device_info = self.radiator_state.device_info()
+        self._attr_native_value = self.radiator_state.get_heat_demand()
 
     async def on_update(self):
+        self._attr_native_value = self.radiator_state.get_heat_demand()
         self.async_write_ha_state()
-
-    @property
-    def native_value(self):
-        return self.radiator_state.get_heat_demand()
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        return self.radiator_state.device_info()
 
 
 class RadiatorSyncRoomClimate(ClimateEntity):
@@ -46,30 +43,27 @@ class RadiatorSyncRoomClimate(ClimateEntity):
     def __init__(self, state: RadiatorStateManager):
         self.radiator_state = state
         self._attr_name = f"{state.room_name} Radiator"
-        self._attr_unique_id = f"{state.coordinator.entry.entry_id}_climate"
+        self._attr_unique_id = (
+            f"{state.coordinator.entry.entry_id}_{state.room_name}_climate"
+        )
         self._attr_min_temp = 15.0
         self._attr_max_temp = 24.0
-        self._attr_target_temperature = None
+        self._attr_target_temperature = self.radiator_state.target_temperature()
+        self._attr_current_temperature = self.radiator_state.current_temperature()
+        self._attr_current_humidity = self.radiator_state.current_humidity()
+        self._attr_device_info = self.radiator_state.device_info()
 
-    async def async_set_hvac_mode(self, mode):
-        self._attr_hvac_mode = mode
+    async def on_update(self):
+        self._attr_current_temperature = self.radiator_state.current_temperature()
+        self._attr_current_humidity = self.radiator_state.current_humidity()
+        self._attr_hvac_action = (
+            HVACAction.HEATING if self.radiator_state.is_heating() else HVACAction.IDLE
+        )
         self.async_write_ha_state()
 
-    @property
-    def current_temperature(self):
-        return self.radiator_state.current_temperature()
-
-    @property
-    def target_temperature(self):
-        return self.radiator_state.target_temperature()
-    
-    @property
-    def min_temp(self):
-        return self._attr_min_temp
-
-    @property
-    def max_temp(self):
-        return self._attr_max_temp
+    async def async_set_hvac_mode(self, hvac_mode):
+        self._attr_hvac_mode = hvac_mode
+        self.async_write_ha_state()
 
     async def async_set_temperature(self, **kwargs):
         if ATTR_TEMPERATURE in kwargs:
@@ -80,7 +74,3 @@ class RadiatorSyncRoomClimate(ClimateEntity):
 
     async def async_will_remove_from_hass(self):
         await self.radiator_state.stop()
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        return self.radiator_state.device_info()

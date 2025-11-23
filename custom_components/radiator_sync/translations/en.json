@@ -57,7 +57,7 @@
         "description": "Edit sensors and settings for this room.",
         "data": {
           "name": "Room name",
-          "climate_entity": "Linked climate device",
+          "climate_entity": "Linked climate device (optional)",
           "temperature_sensor": "Temperature sensor",
           "humidity_sensor": "Humidity sensor (optional)",
           "hysteresis": "Hysteresis (°C)"
@@ -77,8 +77,7 @@
       "options": {
         "add_room": "Add room",
         "edit_room": "Edit room",
-        "remove_room": "Remove room",
-        "finish": "Finish setup"
+        "remove_room": "Remove room"
       }
     }
   }

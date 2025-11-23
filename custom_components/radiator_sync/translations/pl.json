@@ -57,7 +57,7 @@
         "description": "Edytuj czujniki i ustawienia pokoju.",
         "data": {
           "name": "Nazwa pokoju",
-          "climate_entity": "Powiązany termostat",
+          "climate_entity": "Powiązany termostat (opcjonalnie)",
           "temperature_sensor": "Czujnik temperatury",
           "humidity_sensor": "Czujnik wilgotności (opcjonalnie)",
           "hysteresis": "Histereza (°C)"
@@ -77,8 +77,7 @@
       "options": {
         "add_room": "Dodaj pokój",
         "edit_room": "Edytuj pokój",
-        "remove_room": "Usuń pokój",
-        "finish": "Zakończ konfigurację"
+        "remove_room": "Usuń pokój"
       }
     }
   }

@@ -4,10 +4,7 @@ from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
 from .heater.entities import (
-    HeaterRuntime,
-    HeaterCycles,
     HeaterHeatDemand,
-    HeaterLastOn,
     HeaterThresholdNumber,
 )
 from .radiator.entities import RadiatorRoomHeatDemand
@@ -24,19 +21,15 @@ async def async_setup_entry(
     coordinator: Coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
     heater_manager = coordinator.heater
 
+    async_add_entities([HeaterThresholdNumber(heater_manager)])
     heater_sensors = [
-        HeaterRuntime(heater_manager),
-        HeaterCycles(heater_manager),
         HeaterHeatDemand(heater_manager),
-        HeaterLastOn(heater_manager),
     ]
     async_add_entities(heater_sensors)
     for entitie in heater_sensors:
         heater_manager.register(entitie)
-        
-    async_add_entities([HeaterThresholdNumber(coordinator.heater)])
 
     room_entities = [RadiatorRoomHeatDemand(room) for room in coordinator.get_rooms()]
-    async_add_entities(room_entities)
+    async_add_entities(room_entities, True)
     for room, entitie in zip(coordinator.get_rooms(), room_entities):
         room.register(entitie)

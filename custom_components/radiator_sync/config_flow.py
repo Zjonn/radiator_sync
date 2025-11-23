@@ -1,14 +1,10 @@
-from __future__ import annotations
-
 import voluptuous as vol
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from homeassistant import config_entries
-from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import selector
 from homeassistant.core import callback
-from homeassistant.helpers import entity_registry
-from homeassistant.helpers import device_registry
+from homeassistant.helpers import entity_registry as er
 
 from .const import (
     DOMAIN,
@@ -30,9 +26,7 @@ from .const import (
 class RadiatorSyncConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
-    async def async_step_user(
-        self, user_input: Dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_user(self, user_input: Dict[str, Any] | None = None):
         """Initial step: choose heater entity and heater timings."""
         if user_input is not None:
             # Create entry with heater only; rooms are added via options flow
@@ -70,7 +64,7 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
         self.rooms: Dict[str, Dict[str, Any]] = dict(entry.options.get(CONF_ROOMS, {}))
         self.room_name: str | None = None
 
-    async def async_step_init(self, user_input=None) -> FlowResult:
+    async def async_step_init(self, user_input=None):
         if user_input is not None:
             action = user_input["operation"]
 
@@ -80,8 +74,6 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
                 return await self.async_step_edit_room()
             if action == "remove_room":
                 return await self.async_step_remove_room()
-            if action == "finish":
-                return await self.async_step_finish()
 
         schema = vol.Schema(
             {
@@ -91,9 +83,8 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
                             {"value": "add_room", "label": "add_room"},
                             {"value": "edit_room", "label": "edit_room"},
                             {"value": "remove_room", "label": "remove_room"},
-                            {"value": "finish", "label": "finish"},
-                        ], 
-                        translation_key="operation"
+                        ],
+                        translation_key="operation",
                     )
                 )
             }
@@ -101,11 +92,11 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
         return self.async_show_form(step_id="init", data_schema=schema)
 
     # ---------- ADD ROOM ----------
-    async def async_step_add_room(self, user_input=None) -> FlowResult:
+    async def async_step_add_room(self, user_input=None):
         schema = vol.Schema(
             {
                 vol.Required(CONF_NAME): str,
-                vol.Required(CONF_ROOM_CLIMATE): selector.EntitySelector(
+                vol.Optional(CONF_ROOM_CLIMATE): selector.EntitySelector(
                     selector.EntitySelectorConfig(domain="climate")
                 ),
                 vol.Required(CONF_SENSOR_TEMP): selector.EntitySelector(
@@ -136,7 +127,7 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
         return self.async_show_form(step_id="add_room", data_schema=schema)
 
     # ---------- EDIT ROOM ----------
-    async def async_step_edit_room(self, user_input=None) -> FlowResult:
+    async def async_step_edit_room(self, user_input=None):
         if not self.rooms:
             return self.async_abort(reason="no_rooms")
 
@@ -160,7 +151,7 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
         schema = vol.Schema(
             {
                 vol.Required(CONF_NAME, default=room.get(CONF_NAME)): str,
-                vol.Required(
+                vol.Optional(
                     CONF_ROOM_CLIMATE, default=room.get(CONF_ROOM_CLIMATE)
                 ): selector.EntitySelector(
                     selector.EntitySelectorConfig(domain="climate")
@@ -183,8 +174,8 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
         )
         return self.async_show_form(step_id="edit_room_apply", data_schema=schema)
 
-    async def async_step_edit_room_apply(self, user_input=None) -> FlowResult:
-        if self.room_name is None:
+    async def async_step_edit_room_apply(self, user_input=None):
+        if self.room_name is None or user_input is None:
             return self.async_abort(reason="internal_error")
 
         old_room = self.rooms[self.room_name]
@@ -198,7 +189,7 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
         return await self._save_and_restart_options()
 
     # ---------- REMOVE ROOM ----------
-    async def async_step_remove_room(self, user_input=None) -> FlowResult:
+    async def async_step_remove_room(self, user_input=None):
         if not self.rooms:
             return self.async_abort(reason="no_rooms")
 
@@ -217,10 +208,15 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
         )
         return self.async_show_form(step_id="remove_room", data_schema=schema)
 
-    # ---------- FINISH ----------
-    async def async_step_finish(self, user_input=None) -> FlowResult:
-        return await self._save_and_restart_options()
-
     # ---------- WRITE OPTIONS ----------
-    async def _save_and_restart_options(self) -> FlowResult:
+    async def _save_and_restart_options(self):
         return self.async_create_entry(title="", data={CONF_ROOMS: self.rooms})
+
+    async def _delete_room_entities(self, room_name: str) -> None:
+        er_reg = er.async_get(self.hass)
+        entry_id = self.entry.entry_id
+
+        for entity_id in list(er_reg.entities):
+            ent = er_reg.entities[entity_id]
+            if ent.config_entry_id == entry_id and room_name in ent.unique_id:
+                er_reg.async_remove(entity_id)

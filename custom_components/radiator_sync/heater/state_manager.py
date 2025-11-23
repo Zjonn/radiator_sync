@@ -4,6 +4,9 @@ from datetime import datetime
 from homeassistant.core import callback
 from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.entity_registry import async_get as async_get_entity_reg
+from homeassistant.helpers.device_registry import async_get as async_get_dev_reg
+
 
 from typing import TYPE_CHECKING
 
@@ -24,18 +27,16 @@ class HeaterStateManager:
         self.min_on_seconds = config[CONF_MIN_ON]
         self.min_off_seconds = config[CONF_MIN_OFF]
         self.is_running = opts.get("is_running", False)
-        self.last_on = (
-            datetime.fromisoformat(opts.get("last_on")) if opts.get("last_on") else None
-        )
-        self.last_off = (
-            datetime.fromisoformat(opts.get("last_off"))
-            if opts.get("last_off")
-            else None
-        )
-        self.total_runtime_s = opts.get("total_runtime_s", 0.0)
+
+        self.last_on: Optional[datetime] = None
+        if last_on := opts.get("last_on"):
+            self.last_on = datetime.fromisoformat(last_on)
+        self.last_off: Optional[datetime] = None
+        if last_off := opts.get("last_off"):
+            self.last_off = datetime.fromisoformat(last_off)
+
         self.heat_demand = opts.get("heat_demand", 0.0)
         self.threshold_heat_demand = opts.get("threshold_heat_demand", 0.0)
-        self.cycles = opts.get("cycles", 0)
         self._override_mode = opts.get("override_mode", "auto")
 
         self._listeners: List = []
@@ -50,25 +51,31 @@ class HeaterStateManager:
                 "is_running": self.is_running,
                 "last_on": self.last_on.isoformat() if self.last_on else None,
                 "last_off": self.last_off.isoformat() if self.last_off else None,
-                "total_runtime_s": self.total_runtime_s,
                 "heat_demand": self.heat_demand,
                 "threshold_heat_demand": self.threshold_heat_demand,
-                "cycles": self.cycles,
                 "override_mode": self._override_mode,
-                "min_on_seconds": self.min_on_seconds,
-                "min_off_seconds": self.min_off_seconds,
-                "heater_name": self.heater_name,
             }
         )
 
         self.coordinator.hass.config_entries.async_update_entry(entry, options=new_opts)
 
     def device_info(self) -> DeviceInfo:
+        hass = self.coordinator.hass
+
+        ent_reg = async_get_entity_reg(hass)
+        dev_reg = async_get_dev_reg(hass)
+
+        model = self.heater_name
+        entity_entry = ent_reg.async_get(self.heater_name)
+        if entity_entry and entity_entry.device_id:
+            dev_entry = dev_reg.async_get(entity_entry.device_id)
+            model = dev_entry.name if dev_entry else entity_entry.name
+
         return DeviceInfo(
             identifiers={(DOMAIN, f"{self.coordinator.entry.entry_id}_heater")},
             name="Heater",
             manufacturer="RadiatorSync",
-            model=self.heater_name,
+            model=model,
         )
 
     async def set_override_mode(self, mode: str) -> None:
@@ -93,7 +100,7 @@ class HeaterStateManager:
         await self._persist()
         await self.notify()  # update entities showing threshold
 
-    async def set_heat_demand(self, demand: float) -> None:
+    async def apply_heat_demand(self, demand: float) -> None:
         """Turn boiler on/off based on demand (0–100%) with anti-cycling logic."""
 
         self.heat_demand = demand
@@ -153,11 +160,6 @@ class HeaterStateManager:
         if now_running and not self.is_running:
             # Started
             self.last_on = datetime.now()
-            self.cycles += 1
-
-        if not now_running and self.is_running and self.last_on:
-            # Stopped → accumulate runtime
-            self.total_runtime_s += (datetime.now() - self.last_on).total_seconds()
 
         self.is_running = now_running
         await self._persist()

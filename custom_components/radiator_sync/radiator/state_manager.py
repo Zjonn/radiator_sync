@@ -1,8 +1,7 @@
-from typing import Optional, Callable
+from typing import Optional, Callable, Any
 
 from homeassistant.core import callback
 from homeassistant.helpers.event import async_track_state_change_event
-from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.entity import DeviceInfo
 
 from typing import TYPE_CHECKING
@@ -33,19 +32,21 @@ class RadiatorStateManager:
 
     def __init__(self, coordinator: "Coordinator", config: dict) -> None:
         self.coordinator = coordinator
-        self.config = config
+        opts = coordinator.entry.options
 
         self.room_name = config.get(CONF_NAME)
         self.sensor_temp = config.get(CONF_SENSOR_TEMP)
         self.hum_sensor = config.get(CONF_SENSOR_HUM)
         self.hysteresis = config.get(CONF_HYSTERESIS, DEFAULT_HYSTERESIS)
         self.climate_target = config.get(CONF_ROOM_CLIMATE)
-        self.aux_climate = None
 
+        self._is_heating = False
         self._current_temp: Optional[float] = None
-        self._target_temp: Optional[float] = config.get(f"{self.room_name}_target_temp", 21.0)
-
-        self._listeners: list[SensorEntity] = []
+        self._target_temp: Optional[float] = opts.get(
+            f"{self.room_name}_target_temp", 21.0
+        )
+        self._current_humidity: Optional[float] = None
+        self._listeners: list[Any] = []
         self._unsubs: list[Callable] = []
 
     async def _persist(self):
@@ -54,7 +55,7 @@ class RadiatorStateManager:
 
         new_opts.update(
             {
-                f"{self.room_name}_target_temp": self._target_temp,
+                f"{self.room_name}_target_temp": self._target_temp, 
             }
         )
 
@@ -74,9 +75,9 @@ class RadiatorStateManager:
     # Registration and state read
     # ----------------------------
 
-    def register(self, sensor: SensorEntity):
+    def register(self, entity: Any):
         """Registers an entity that should refresh when state changes."""
-        self._listeners.append(sensor)
+        self._listeners.append(entity)
 
     async def notify(self):
         """Notifies registered entities to refresh HA state."""
@@ -92,12 +93,18 @@ class RadiatorStateManager:
     def target_temperature(self) -> Optional[float]:
         return self._target_temp
 
+    def current_humidity(self) -> Optional[int]:
+        return int(self._current_humidity) if self._current_humidity is not None else None
+
+    def is_heating(self) -> bool:
+        return self._is_heating
+
     def get_heat_demand(self) -> int:
         """Return heat demand 0–100% based on target/current difference."""
         if self._current_temp is None or self._target_temp is None:
             return 0
 
-        delta = max(0.0, self._target_temp - self._current_temp)
+        delta = max(0.0, (self._target_temp + self.hysteresis) - self._current_temp)
         return round(min(delta / self.MAX_DELTA, 1.0) * 100.0)
 
     # ----------------------------
@@ -130,11 +137,13 @@ class RadiatorStateManager:
         # too cold -> boost heating
         if self._current_temp < low:
             await self._set_climate_temp(self._target_temp + 5)
+            self._is_heating = True
             return
 
         # too warm -> reduce heating
-        if self._current_temp > high:
+        elif self._current_temp > high:
             await self._set_climate_temp(self._target_temp - 5)
+            self._is_heating = False
             return
 
     async def _set_climate_temp(self, value: float):
@@ -156,6 +165,18 @@ class RadiatorStateManager:
         """Begin tracking temperature and climate target changes."""
 
         @callback
+        async def hum_update(ev):
+            st = ev.data.get("new_state")
+            if st and st.state not in ("unknown", "unavailable"):
+                try:
+                    self._current_humidity = float(st.state)
+                except Exception as e:
+                    _LOGGER.error(
+                        f"Radiator '{self.room_name}': invalid humidity state: {st.state}: {e}"
+                    )
+                await self.notify()
+
+        @callback
         async def temp_update(ev):
             st = ev.data.get("new_state")
             if st and st.state not in ("unknown", "unavailable"):
@@ -174,11 +195,19 @@ class RadiatorStateManager:
                 await self._apply_climate_control()
 
         # track sensor and target climate
-        self._unsubs.append(
-            async_track_state_change_event(
-                self.coordinator.hass, [self.sensor_temp], temp_update
+        if self.sensor_temp:
+            self._unsubs.append(
+                async_track_state_change_event(
+                    self.coordinator.hass, [self.sensor_temp], temp_update
+                )
             )
-        )
+
+        if self.hum_sensor:
+            self._unsubs.append(
+                async_track_state_change_event(
+                    self.coordinator.hass, [self.hum_sensor], hum_update
+                )
+            )
 
         if self.climate_target:
             self._unsubs.append(
@@ -186,7 +215,6 @@ class RadiatorStateManager:
                     self.coordinator.hass, [self.climate_target], hw_target_update
                 )
             )
-
 
         # initial values read
         st = self.coordinator.hass.states.get(self.sensor_temp)

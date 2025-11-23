@@ -31,7 +31,7 @@ class Coordinator:
         """Return all managed rooms."""
         return self.rooms.values()
 
-    async def update(self):
+    async def on_update(self):
         """Notify all managed entities to update their state."""
         heat_demands = [
             demand
@@ -39,4 +39,4 @@ class Coordinator:
             if (demand := room.get_heat_demand()) is not None
         ]
         heat_demand = sum(heat_demands) / len(heat_demands)
-        await self.heater.set_heat_demand(heat_demand)
+        await self.heater.apply_heat_demand(heat_demand)

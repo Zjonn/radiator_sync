@@ -28,3 +28,32 @@ jobs:
         uses: hacs/action@main
         with:
           category: integration
+
+  lint:
+    name: Ruff & Pylance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff homeassistant
+
+      - name: Ruff lint
+        run: ruff check .
+
+      - name: Ruff format check
+        run: ruff format --check .
+
+      - name: Install Pyright (Pylance)
+        run: npm install -g pyright
+
+      - name: Pylance type check
+        run: pyright custom_components/radiator_sync

@@ -55,7 +55,7 @@ class RadiatorStateManager:
 
         new_opts.update(
             {
-                f"{self.room_name}_target_temp": self._target_temp, 
+                f"{self.room_name}_target_temp": self._target_temp,
             }
         )
 
@@ -94,7 +94,9 @@ class RadiatorStateManager:
         return self._target_temp
 
     def current_humidity(self) -> Optional[int]:
-        return int(self._current_humidity) if self._current_humidity is not None else None
+        return (
+            int(self._current_humidity) if self._current_humidity is not None else None
+        )
 
     def is_heating(self) -> bool:
         return self._is_heating
@@ -106,7 +108,6 @@ class RadiatorStateManager:
 
         delta = max(0.0, (self._target_temp + self.hysteresis) - self._current_temp)
         return round(min(delta / self.MAX_DELTA, 1.0) * 100.0)
-
     # ----------------------------
     # Temperature & target changes
     # ----------------------------

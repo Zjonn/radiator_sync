@@ -1,4 +1,4 @@
-from typing import Optional, Callable
+from typing import Optional, Callable, Any
 from datetime import datetime
 
 from homeassistant.core import callback
@@ -19,7 +19,7 @@ from ..const import CONF_HEATER, CONF_MIN_ON, CONF_MIN_OFF, DOMAIN
 class HeaterStateManager:
     """Tracks boiler runtime, cycles and running state, and manages HA subscription."""
 
-    def __init__(self, coordinator: "RadiatorSyncCoordinator", config):
+    def __init__(self, coordinator: "RadiatorSyncCoordinator", config: dict[str, Any]):
         self.coordinator = coordinator
 
         self.heater_name = config[CONF_HEATER]
@@ -67,11 +67,11 @@ class HeaterStateManager:
         ent_reg = async_get_entity_reg(hass)
         dev_reg = async_get_dev_reg(hass)
 
-        model = self.heater_name
+        model = str(self.heater_name)
         entity_entry = ent_reg.async_get(self.heater_name)
         if entity_entry and entity_entry.device_id:
             dev_entry = dev_reg.async_get(entity_entry.device_id)
-            model = dev_entry.name if dev_entry else entity_entry.name
+            model = str(dev_entry.name if dev_entry else entity_entry.name)
 
         return DeviceInfo(
             identifiers={(DOMAIN, f"{self.coordinator.entry.entry_id}_heater")},

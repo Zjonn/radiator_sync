@@ -17,7 +17,7 @@ from homeassistant.core import callback
 from .state_manager import RadiatorStateManager
 
 
-class RadiatorRoomHeatDemand(CoordinatorEntity, SensorEntity):
+class RadiatorRoomHeatDemand(CoordinatorEntity, SensorEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     _attr_native_unit_of_measurement = "%"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_state_class = "measurement"
@@ -39,7 +39,7 @@ class RadiatorRoomHeatDemand(CoordinatorEntity, SensorEntity):
         self.async_write_ha_state()
 
 
-class RadiatorSyncRoomClimate(CoordinatorEntity, ClimateEntity):
+class RadiatorSyncRoomClimate(CoordinatorEntity, ClimateEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF]
     _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE

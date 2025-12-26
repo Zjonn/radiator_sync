@@ -18,7 +18,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Create coordinator ONCE per entry
     heater_conf = entry.data
     rooms_conf = entry.options.get(CONF_ROOMS, {})
-    coordinator = RadiatorSyncCoordinator(hass, entry, heater_conf, rooms_conf)
+    # Convert MappingProxy to dict for the coordinator
+    coordinator = RadiatorSyncCoordinator(hass, entry, dict(heater_conf), rooms_conf)
     await coordinator.async_setup()
 
     hass.data[DOMAIN][entry.entry_id] = {

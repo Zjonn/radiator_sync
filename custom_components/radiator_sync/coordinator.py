@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Any, Mapping
 
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
@@ -24,8 +24,8 @@ class RadiatorSyncCoordinator(DataUpdateCoordinator[None]):
         self,
         hass: HomeAssistant,
         entry: ConfigEntry,
-        heater_conf: Dict[str, Any],
-        rooms_conf: Dict[str, Any],
+        heater_conf: dict[str, Any],
+        rooms_conf: Mapping[str, Any],
     ) -> None:
         """Initialize the coordinator."""
         super().__init__(
@@ -37,10 +37,10 @@ class RadiatorSyncCoordinator(DataUpdateCoordinator[None]):
 
         self.entry = entry
         self._store = Store(hass, STORAGE_VERSION, f"{STORAGE_KEY}_{entry.entry_id}")
-        self._runtime_state: Dict[str, Any] = {}
+        self._runtime_state: dict[str, Any] = {}
 
         self.heater = HeaterStateManager(self, heater_conf)
-        self.rooms: Dict[str, RadiatorStateManager] = {}
+        self.rooms: dict[str, RadiatorStateManager] = {}
 
         for name, config in rooms_conf.items():
             room = RadiatorStateManager(self, config)

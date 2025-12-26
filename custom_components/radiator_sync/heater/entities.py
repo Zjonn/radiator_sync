@@ -13,7 +13,7 @@ import logging
 _LOGGER = logging.getLogger(__name__)
 
 
-class HeaterThresholdNumber(CoordinatorEntity, NumberEntity):
+class HeaterThresholdNumber(CoordinatorEntity, NumberEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     """Configurable threshold for minimum required heat demand."""
 
     _attr_name = "Heater Threshold Heat Demand"
@@ -40,7 +40,7 @@ class HeaterThresholdNumber(CoordinatorEntity, NumberEntity):
         await self.heater_state.set_threshold_heat_demand(value)
 
 
-class HeaterActiveBinary(CoordinatorEntity, BinarySensorEntity):
+class HeaterActiveBinary(CoordinatorEntity, BinarySensorEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     """Shows if heater is currently heating."""
 
     _attr_name = "Heater Active"
@@ -67,7 +67,7 @@ class HeaterActiveBinary(CoordinatorEntity, BinarySensorEntity):
         await self.heater_state.stop()
 
 
-class HeaterHeatDemand(CoordinatorEntity, SensorEntity):
+class HeaterHeatDemand(CoordinatorEntity, SensorEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     """Number of boiler cycles."""
 
     _attr_name = "Heater Heat Demand"
@@ -87,7 +87,7 @@ class HeaterHeatDemand(CoordinatorEntity, SensorEntity):
         self.async_write_ha_state()
 
 
-class HeaterModeSelect(CoordinatorEntity, SelectEntity):
+class HeaterModeSelect(CoordinatorEntity, SelectEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     """Provides 3 modes:
     - auto (radiators drive boiler)
     - on (force boiler on)

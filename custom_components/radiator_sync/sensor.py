@@ -8,6 +8,9 @@ from .radiator.entities import RadiatorRoomHeatDemand
 from .coordinator import RadiatorSyncCoordinator
 
 
+from homeassistant.helpers.entity import Entity
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -20,7 +23,7 @@ async def async_setup_entry(
     ]
     heater_manager = coordinator.heater
 
-    entities = [
+    entities: list[Entity] = [
         HeaterHeatDemand(heater_manager),
     ]
 

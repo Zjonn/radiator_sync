@@ -1,4 +1,4 @@
-from typing import Optional, Callable
+from typing import Optional, Callable, Mapping, Any
 
 from homeassistant.core import callback
 from homeassistant.helpers.event import async_track_state_change_event
@@ -30,7 +30,9 @@ class RadiatorStateManager:
 
     MAX_DELTA = 2.0  # 100% demand if ΔT >= 2°C
 
-    def __init__(self, coordinator: "RadiatorSyncCoordinator", config: dict) -> None:
+    def __init__(
+        self, coordinator: "RadiatorSyncCoordinator", config: Mapping[str, Any]
+    ) -> None:
         self.coordinator = coordinator
 
         self.room_name = config.get(CONF_NAME)
@@ -69,7 +71,9 @@ class RadiatorStateManager:
             },
             name=f"{self.room_name}",
             manufacturer="RadiatorSync",
-            model=self.climate_target or "Generic Radiator",
+            model=str(self.climate_target)
+            if self.climate_target
+            else "Generic Radiator",
         )
 
     # ----------------------------
@@ -234,15 +238,15 @@ class RadiatorStateManager:
                 )
             )
 
-        # initial values read
-        st = self.coordinator.hass.states.get(self.sensor_temp)
-        if st:
-            try:
-                self._current_temp = float(st.state)
-            except Exception as e:
-                _LOGGER.error(
-                    f"Radiator '{self.room_name}': invalid temperature state: {st.state}: {e}"
-                )
+        if self.sensor_temp:
+            cl_state = self.coordinator.hass.states.get(self.sensor_temp)
+            if cl_state:
+                try:
+                    self._current_temp = float(cl_state.state)
+                except Exception as e:
+                    _LOGGER.error(
+                        f"Radiator '{self.room_name}': invalid temperature state: {cl_state.state}: {e}"
+                    )
 
         if self.climate_target:
             st = self.coordinator.hass.states.get(self.climate_target)

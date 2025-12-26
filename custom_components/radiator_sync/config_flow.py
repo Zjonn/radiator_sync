@@ -44,8 +44,8 @@ class RadiatorSyncConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Required(CONF_HEATER): selector.EntitySelector(
                     selector.EntitySelectorConfig(domain=["switch"])
                 ),
-                vol.Optional(CONF_MIN_ON, default=DEFAULT_MIN_ON): int,
-                vol.Optional(CONF_MIN_OFF, default=DEFAULT_MIN_OFF): int,
+                vol.Optional(CONF_MIN_ON, default=DEFAULT_MIN_ON): int,  # type: ignore
+                vol.Optional(CONF_MIN_OFF, default=DEFAULT_MIN_OFF): int,  # type: ignore
             }
         )
         return self.async_show_form(step_id="user", data_schema=schema)
@@ -105,7 +105,7 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
                 vol.Optional(CONF_SENSOR_HUM): selector.EntitySelector(
                     selector.EntitySelectorConfig(domain="sensor")
                 ),
-                vol.Optional(CONF_HYSTERESIS, default=DEFAULT_HYSTERESIS): vol.Coerce(
+                vol.Optional(CONF_HYSTERESIS, default=DEFAULT_HYSTERESIS): vol.Coerce(  # type: ignore
                     float
                 ),
             }

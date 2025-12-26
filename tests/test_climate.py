@@ -1,5 +1,7 @@
 """Test the Radiator Sync climate."""
+
 from homeassistant.components.climate.const import HVACMode
+
 
 async def test_climate(hass, setup_integration):
     """Test climate setup and state."""

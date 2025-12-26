@@ -1,5 +1,6 @@
 """Test the Radiator Sync sensors."""
 
+
 async def test_sensors(hass, setup_integration):
     """Test sensor setup and state."""
     # Check heater heat demand sensor

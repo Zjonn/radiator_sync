@@ -1,5 +1,6 @@
 """Test the Radiator Sync numbers."""
 
+
 async def test_number(hass, setup_integration):
     """Test number setup and state."""
     state = hass.states.get("number.heater_threshold_heat_demand")

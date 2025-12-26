@@ -125,7 +125,7 @@ class RadiatorStateManager:
 
         if not self.climate_target:
             return
-        
+
         if self._current_temp is None or self._target_temp is None:
             return
 

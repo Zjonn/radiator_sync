@@ -15,7 +15,9 @@ async def async_setup_entry(
 ):
     """Setup all sensors: heater diagnostics + heat demand."""
 
-    coordinator: RadiatorSyncCoordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
+    coordinator: RadiatorSyncCoordinator = hass.data[DOMAIN][entry.entry_id][
+        "coordinator"
+    ]
     heater_manager = coordinator.heater
 
     entities = [

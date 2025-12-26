@@ -1,7 +1,9 @@
 """Test Radiator Sync initialization."""
+
 from homeassistant.core import HomeAssistant
 from custom_components.radiator_sync.const import DOMAIN
 from pytest_homeassistant_custom_component.common import MockConfigEntry
+
 
 async def test_setup_entry(hass: HomeAssistant):
     """Test setting up the entry."""

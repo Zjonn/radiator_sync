@@ -55,7 +55,7 @@ class RadiatorSyncRoomClimate(CoordinatorEntity, ClimateEntity):
         self._attr_min_temp = 15.0
         self._attr_max_temp = 24.0
         self._attr_device_info = self.radiator_state.device_info()
-        
+
         self._update_attr()
 
     def _update_attr(self):

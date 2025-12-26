@@ -1,5 +1,7 @@
 """Test the Radiator Sync binary sensors."""
+
 from homeassistant.const import STATE_OFF, STATE_ON
+
 
 async def test_binary_sensors(hass, setup_integration):
     """Test binary sensor setup and state."""

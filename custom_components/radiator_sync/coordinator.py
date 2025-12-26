@@ -51,7 +51,7 @@ class RadiatorSyncCoordinator(DataUpdateCoordinator[None]):
         data = await self._store.async_load()
         if data:
             self._runtime_state = data
-        
+
         # Initialize state managers with loaded state
         self.heater.load_state(self._runtime_state.get("heater", {}))
         for name, room in self.rooms.items():
@@ -64,7 +64,7 @@ class RadiatorSyncCoordinator(DataUpdateCoordinator[None]):
         }
         for name, room in self.rooms.items():
             state[f"room_{name}"] = room.get_state()
-        
+
         self._runtime_state = state
         await self._store.async_save(state)
 

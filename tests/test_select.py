@@ -1,5 +1,6 @@
 """Test the Radiator Sync selects."""
 
+
 async def test_select(hass, setup_integration):
     """Test select setup and state."""
     state = hass.states.get("select.heater_mode")

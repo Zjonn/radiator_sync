@@ -14,7 +14,9 @@ async def async_setup_entry(
 ):
     """Setup climate entities for all managed rooms."""
 
-    coordinator: RadiatorSyncCoordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
+    coordinator: RadiatorSyncCoordinator = hass.data[DOMAIN][entry.entry_id][
+        "coordinator"
+    ]
 
     entities = [RadiatorSyncRoomClimate(room) for room in coordinator.get_rooms()]
     async_add_entities(entities)

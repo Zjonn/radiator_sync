@@ -14,7 +14,9 @@ async def async_setup_entry(
 ):
     """Setup mode selection entity."""
 
-    coordinator: RadiatorSyncCoordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
+    coordinator: RadiatorSyncCoordinator = hass.data[DOMAIN][entry.entry_id][
+        "coordinator"
+    ]
     heater_manager = coordinator.heater
 
     entities = [

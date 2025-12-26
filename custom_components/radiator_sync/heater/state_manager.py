@@ -111,7 +111,7 @@ class HeaterStateManager:
         self.heat_demand = demand
         await self._persist()
         await self.notify()
-        
+
         if self._override_mode != "auto":
             return  # ignore heat demand when overridden
 

@@ -12,14 +12,16 @@ from homeassistant.const import (
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.core import callback
+from typing import List, cast
 
+from radiator_sync.coordinator import RadiatorSyncCoordinator
 
 from .state_manager import RadiatorStateManager
 
 
-class RadiatorRoomHeatDemand(CoordinatorEntity, SensorEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
+class RadiatorRoomHeatDemand(CoordinatorEntity[RadiatorSyncCoordinator], SensorEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
     _attr_native_unit_of_measurement = "%"
-    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_entity_category = cast(EntityCategory, EntityCategory.DIAGNOSTIC)
     _attr_state_class = "measurement"
 
     def __init__(self, state: RadiatorStateManager):
@@ -39,11 +41,15 @@ class RadiatorRoomHeatDemand(CoordinatorEntity, SensorEntity):  # pyright: ignor
         self.async_write_ha_state()
 
 
-class RadiatorSyncRoomClimate(CoordinatorEntity, ClimateEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
+class RadiatorSyncRoomClimate(
+    CoordinatorEntity[RadiatorSyncCoordinator], ClimateEntity
+):  # pyright: ignore[reportIncompatibleVariableOverride]
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
-    _attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF]
-    _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
-    _attr_hvac_mode = HVACMode.HEAT
+    _attr_hvac_modes = cast(List[HVACMode], [HVACMode.HEAT, HVACMode.OFF])
+    _attr_supported_features = cast(
+        ClimateEntityFeature, ClimateEntityFeature.TARGET_TEMPERATURE
+    )
+    _attr_hvac_mode = cast(HVACMode, HVACMode.HEAT)
 
     def __init__(self, state: RadiatorStateManager):
         super().__init__(state.coordinator)
@@ -62,8 +68,13 @@ class RadiatorSyncRoomClimate(CoordinatorEntity, ClimateEntity):  # pyright: ign
         self._attr_current_temperature = self.radiator_state.current_temperature()
         self._attr_target_temperature = self.radiator_state.target_temperature()
         self._attr_current_humidity = self.radiator_state.current_humidity()
-        self._attr_hvac_action = (
-            HVACAction.HEATING if self.radiator_state.is_heating() else HVACAction.IDLE
+        self._attr_hvac_action = cast(
+            HVACAction,
+            (
+                HVACAction.HEATING
+                if self.radiator_state.is_heating()
+                else HVACAction.IDLE
+            ),
         )
 
     @callback

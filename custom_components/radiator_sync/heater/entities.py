@@ -6,6 +6,9 @@ from homeassistant.const import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.core import callback
 
+from radiator_sync.coordinator import RadiatorSyncCoordinator
+
+
 from .state_manager import HeaterStateManager
 
 import logging
@@ -13,13 +16,13 @@ import logging
 _LOGGER = logging.getLogger(__name__)
 
 
-class HeaterThresholdNumber(CoordinatorEntity, NumberEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
+class HeaterThresholdNumber(CoordinatorEntity[RadiatorSyncCoordinator], NumberEntity):
     """Configurable threshold for minimum required heat demand."""
 
     _attr_name = "Heater Threshold Heat Demand"
     _attr_native_unit_of_measurement = "%"
     _attr_entity_category = EntityCategory.CONFIG
-    _attr_mode = NumberMode.AUTO  # user-friendly UI
+    _attr_mode = NumberMode.AUTO
 
     def __init__(self, state: HeaterStateManager):
         super().__init__(state.coordinator)
@@ -40,7 +43,9 @@ class HeaterThresholdNumber(CoordinatorEntity, NumberEntity):  # pyright: ignore
         await self.heater_state.set_threshold_heat_demand(value)
 
 
-class HeaterActiveBinary(CoordinatorEntity, BinarySensorEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
+class HeaterActiveBinary(
+    CoordinatorEntity[RadiatorSyncCoordinator], BinarySensorEntity
+):
     """Shows if heater is currently heating."""
 
     _attr_name = "Heater Active"
@@ -67,7 +72,7 @@ class HeaterActiveBinary(CoordinatorEntity, BinarySensorEntity):  # pyright: ign
         await self.heater_state.stop()
 
 
-class HeaterHeatDemand(CoordinatorEntity, SensorEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
+class HeaterHeatDemand(CoordinatorEntity[RadiatorSyncCoordinator], SensorEntity):
     """Number of boiler cycles."""
 
     _attr_name = "Heater Heat Demand"
@@ -87,7 +92,7 @@ class HeaterHeatDemand(CoordinatorEntity, SensorEntity):  # pyright: ignore[repo
         self.async_write_ha_state()
 
 
-class HeaterModeSelect(CoordinatorEntity, SelectEntity):  # pyright: ignore[reportIncompatibleVariableOverride]
+class HeaterModeSelect(CoordinatorEntity[RadiatorSyncCoordinator], SelectEntity):
     """Provides 3 modes:
     - auto (radiators drive boiler)
     - on (force boiler on)

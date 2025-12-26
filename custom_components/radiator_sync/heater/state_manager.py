@@ -3,7 +3,7 @@ from datetime import datetime
 
 from homeassistant.core import callback
 from homeassistant.helpers.event import async_track_state_change_event
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_registry import async_get as async_get_entity_reg
 from homeassistant.helpers.device_registry import async_get as async_get_dev_reg
 

@@ -2,7 +2,7 @@ from typing import Optional, Callable, Mapping, Any
 
 from homeassistant.core import callback
 from homeassistant.helpers.event import async_track_state_change_event
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceInfo
 
 from typing import TYPE_CHECKING
 

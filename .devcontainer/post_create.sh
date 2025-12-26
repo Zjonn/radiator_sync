@@ -17,4 +17,10 @@ else
   ln -sfn "${SRC_PATH}" "${DEST_PATH}"
 fi
 
+apt install python3-pip -y
+# Install development dependencies
+pip install --break-system-packages -r requirements_test.txt
+# Install dependencies from manifest
+grep -oP '(?<="requirements": \[)[^\]]*' custom_components/radiator_sync/manifest.json | tr -d '" ' | tr ',' '\n' | xargs -r pip install --break-system-packages
+
 echo "Devcontainer ready. Start Home Assistant with: hass -c /config"

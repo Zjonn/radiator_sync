@@ -14,8 +14,22 @@
       "extensions": [
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "esbenp.prettier-vscode"
-      ]
+        "esbenp.prettier-vscode",
+        "visualstudioexptteam.vscodeintellicode",
+        "kevinrose.vsc-python-test-adapter"
+      ],
+      "settings": {
+        "python.testing.pytestEnabled": true,
+        "python.testing.unittestEnabled": false,
+        "python.testing.nosetestsEnabled": false,
+        "python.testing.pytestArgs": [
+          "tests"
+        ],
+        "python.analysis.extraPaths": [
+          "${containerWorkspaceFolder}/custom_components"
+        ],
+        "python.analysis.typeCheckingMode": "basic"
+      }
     }
   },
   "mounts": [

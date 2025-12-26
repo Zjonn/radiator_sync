@@ -105,6 +105,9 @@ class HeaterStateManager:
     async def apply_heat_demand(self, demand: float) -> None:
         """Turn boiler on/off based on demand (0–100%) with anti-cycling logic."""
 
+        if self.heat_demand == demand:
+            return
+
         self.heat_demand = demand
         await self._persist()
         await self.notify()
@@ -155,6 +158,9 @@ class HeaterStateManager:
     async def update_from_state(self, new_state: str):
         """Update running/cycle/runtime logic from switch state."""
         now_running = new_state == "on"
+
+        if now_running == self.is_running:
+            return
 
         if now_running and not self.is_running:
             # Started

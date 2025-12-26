@@ -21,42 +21,45 @@ class HeaterStateManager:
 
     def __init__(self, coordinator: "RadiatorSyncCoordinator", config):
         self.coordinator = coordinator
-        opts = coordinator.entry.options
 
         self.heater_name = config[CONF_HEATER]
         self.min_on_seconds = config[CONF_MIN_ON]
         self.min_off_seconds = config[CONF_MIN_OFF]
-        self.is_running = opts.get("is_running", False)
+        self.is_running = False
 
         self.last_on: Optional[datetime] = None
-        if last_on := opts.get("last_on"):
-            self.last_on = datetime.fromisoformat(last_on)
         self.last_off: Optional[datetime] = None
-        if last_off := opts.get("last_off"):
-            self.last_off = datetime.fromisoformat(last_off)
 
-        self.heat_demand = opts.get("heat_demand", 0.0)
-        self.threshold_heat_demand = opts.get("threshold_heat_demand", 0.0)
-        self._override_mode = opts.get("override_mode", "auto")
+        self.heat_demand = 0.0
+        self.threshold_heat_demand = 0.0
+        self._override_mode = "auto"
 
         self._unsub: Optional[Callable] = None
 
+    def load_state(self, state: dict):
+        """Load state from persistence."""
+        self.is_running = state.get("is_running", False)
+        if last_on := state.get("last_on"):
+            self.last_on = datetime.fromisoformat(last_on)
+        if last_off := state.get("last_off"):
+            self.last_off = datetime.fromisoformat(last_off)
+        self.heat_demand = state.get("heat_demand", 0.0)
+        self.threshold_heat_demand = state.get("threshold_heat_demand", 0.0)
+        self._override_mode = state.get("override_mode", "auto")
+
+    def get_state(self) -> dict:
+        """Get state for persistence."""
+        return {
+            "is_running": self.is_running,
+            "last_on": self.last_on.isoformat() if self.last_on else None,
+            "last_off": self.last_off.isoformat() if self.last_off else None,
+            "heat_demand": self.heat_demand,
+            "threshold_heat_demand": self.threshold_heat_demand,
+            "override_mode": self._override_mode,
+        }
+
     async def _persist(self):
-        entry = self.coordinator.entry
-        new_opts = dict(entry.options)
-
-        new_opts.update(
-            {
-                "is_running": self.is_running,
-                "last_on": self.last_on.isoformat() if self.last_on else None,
-                "last_off": self.last_off.isoformat() if self.last_off else None,
-                "heat_demand": self.heat_demand,
-                "threshold_heat_demand": self.threshold_heat_demand,
-                "override_mode": self._override_mode,
-            }
-        )
-
-        self.coordinator.hass.config_entries.async_update_entry(entry, options=new_opts)
+        await self.coordinator.async_save_runtime_state()
 
     def device_info(self) -> DeviceInfo:
         hass = self.coordinator.hass

@@ -19,6 +19,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     heater_conf = entry.data
     rooms_conf = entry.options.get(CONF_ROOMS, {})
     coordinator = RadiatorSyncCoordinator(hass, entry, heater_conf, rooms_conf)
+    await coordinator.async_setup()
 
     hass.data[DOMAIN][entry.entry_id] = {
         "coordinator": coordinator,

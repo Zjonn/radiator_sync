@@ -32,7 +32,6 @@ class RadiatorStateManager:
 
     def __init__(self, coordinator: "RadiatorSyncCoordinator", config: dict) -> None:
         self.coordinator = coordinator
-        opts = coordinator.entry.options
 
         self.room_name = config.get(CONF_NAME)
         self.sensor_temp = config.get(CONF_SENSOR_TEMP)
@@ -42,26 +41,26 @@ class RadiatorStateManager:
 
         self._is_heating = False
         self._current_temp: Optional[float] = None
-        self._target_temp: Optional[float] = opts.get(
-            f"{self.room_name}_target_temp", 21.0
-        )
+        self._target_temp: Optional[float] = 21.0
         self._current_humidity: Optional[float] = None
         self._climate_min_temp = None
         self._climate_max_temp = None
 
         self._unsubs: list[Callable] = []
 
+    def load_state(self, state: dict):
+        """Load state from persistence."""
+        if "target_temp" in state:
+            self._target_temp = state["target_temp"]
+
+    def get_state(self) -> dict:
+        """Get state for persistence."""
+        return {
+            "target_temp": self._target_temp,
+        }
+
     async def _persist(self):
-        entry = self.coordinator.entry
-        new_opts = dict(entry.options)
-
-        new_opts.update(
-            {
-                f"{self.room_name}_target_temp": self._target_temp,
-            }
-        )
-
-        self.coordinator.hass.config_entries.async_update_entry(entry, options=new_opts)
+        await self.coordinator.async_save_runtime_state()
 
     def device_info(self) -> DeviceInfo:
         return DeviceInfo(

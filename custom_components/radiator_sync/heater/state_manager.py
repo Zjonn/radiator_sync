@@ -105,12 +105,15 @@ class HeaterStateManager:
 
         self.heat_demand = demand
         await self._persist()
-
+        await self.notify()
+        
         if self._override_mode != "auto":
             return  # ignore heat demand when overridden
 
         now = datetime.now()
-        should_run = demand >= self.threshold_heat_demand
+        should_run = (demand >= self.threshold_heat_demand) or (
+            self.is_running and demand > 0.0
+        )
 
         if should_run and not self.is_running:
             if self.last_off is not None:
@@ -119,7 +122,6 @@ class HeaterStateManager:
                     # Still in anti-short-cycle off window
                     return
 
-            # turn ON
             await self.coordinator.hass.services.async_call(
                 "switch", "turn_on", {"entity_id": self.heater_name}, blocking=False
             )
@@ -132,7 +134,6 @@ class HeaterStateManager:
                     # Still in anti-short-cycle on window
                     return
 
-            # turn OFF
             await self.coordinator.hass.services.async_call(
                 "switch", "turn_off", {"entity_id": self.heater_name}, blocking=False
             )

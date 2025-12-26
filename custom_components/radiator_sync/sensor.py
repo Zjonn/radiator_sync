@@ -21,7 +21,6 @@ async def async_setup_entry(
     coordinator: Coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
     heater_manager = coordinator.heater
 
-    async_add_entities([HeaterThresholdNumber(heater_manager)])
     heater_sensors = [
         HeaterHeatDemand(heater_manager),
     ]

@@ -17,7 +17,7 @@ class HeaterThresholdNumber(NumberEntity):
     _attr_name = "Heater Threshold Heat Demand"
     _attr_native_unit_of_measurement = "%"
     _attr_entity_category = EntityCategory.CONFIG
-    _attr_mode = NumberMode.SLIDER  # user-friendly UI
+    _attr_mode = NumberMode.AUTO  # user-friendly UI
 
     def __init__(self, state: HeaterStateManager):
         self.heater_state = state
@@ -25,11 +25,13 @@ class HeaterThresholdNumber(NumberEntity):
         self._attr_native_min_value = 0.0
         self._attr_native_max_value = 100.0
         self._attr_native_step = 1.0
+        self._attr_native_value = self.heater_state.threshold_heat_demand
         self._attr_device_info = self.heater_state.device_info()
 
     async def async_set_native_value(self, value: float) -> None:
         self._attr_native_value = value
         await self.heater_state.set_threshold_heat_demand(value)
+        self.async_write_ha_state()
 
 
 class HeaterActiveBinary(BinarySensorEntity):
@@ -67,6 +69,7 @@ class HeaterHeatDemand(SensorEntity):
         self.heater_state = state
         self._attr_unique_id = f"{state.coordinator.entry.entry_id}_heater_heat_demand"
         self._attr_device_info = self.heater_state.device_info()
+        self._attr_native_value = self.heater_state.heat_demand
 
     async def on_update(self):
         self._attr_native_value = self.heater_state.heat_demand

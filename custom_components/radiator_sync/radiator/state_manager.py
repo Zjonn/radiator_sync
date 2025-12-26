@@ -46,6 +46,9 @@ class RadiatorStateManager:
             f"{self.room_name}_target_temp", 21.0
         )
         self._current_humidity: Optional[float] = None
+        self._climate_min_temp = None
+        self._climate_max_temp = None
+
         self._listeners: list[Any] = []
         self._unsubs: list[Callable] = []
 
@@ -106,7 +109,7 @@ class RadiatorStateManager:
         if self._current_temp is None or self._target_temp is None:
             return 0
 
-        delta = max(0.0, (self._target_temp + self.hysteresis) - self._current_temp)
+        delta = max(0.0, self._target_temp - self._current_temp)
         return round(min(delta / self.MAX_DELTA, 1.0) * 100.0)
 
     # ----------------------------
@@ -125,28 +128,47 @@ class RadiatorStateManager:
     # ----------------------------
 
     async def _apply_climate_control(self):
-        """Modify linked climate temperature depending on temp/hysteresis window."""
+        """Set climate to min/max temperature instead of ±5 offset."""
 
         if not self.climate_target:
-            return  # climate optional
-
+            return
+        
         if self._current_temp is None or self._target_temp is None:
             return
 
         low = self._target_temp - self.hysteresis
         high = self._target_temp + self.hysteresis
 
-        # too cold -> boost heating
+        # too cold → go to max
         if self._current_temp < low:
-            await self._set_climate_temp(self._target_temp + 5)
+            _, max_temp = await self._get_climate_min_max()
+            await self._set_climate_temp(high + 5 if max_temp is None else max_temp)
             self._is_heating = True
             return
 
-        # too warm -> reduce heating
+        # too warm → go to min
         elif self._current_temp > high:
-            await self._set_climate_temp(self._target_temp - 5)
+            min_temp, _ = await self._get_climate_min_max()
+            await self._set_climate_temp(low - 5 if min_temp is None else min_temp)
             self._is_heating = False
             return
+
+    async def _get_climate_min_max(self):
+        """Fetch min/max temperature from climate entity, if exists."""
+        if not self.climate_target:
+            return None, None
+
+        if self._climate_min_temp and self._climate_max_temp:
+            return self._climate_min_temp, self._climate_max_temp
+
+        cl_state = self.coordinator.hass.states.get(self.climate_target)
+        if cl_state is None:
+            return None, None
+
+        self._climate_min_temp = cl_state.attributes.get("min_temp")
+        self._climate_max_temp = cl_state.attributes.get("max_temp")
+
+        return self._climate_min_temp, self._climate_max_temp
 
     async def _set_climate_temp(self, value: float):
         """Send set_temperature only if entity exists."""
@@ -189,6 +211,7 @@ class RadiatorStateManager:
                         f"Radiator '{self.room_name}': invalid temperature state: {st.state}: {e}"
                     )
                 await self.notify()
+                await self._apply_climate_control()
 
         @callback
         async def hw_target_update(ev):

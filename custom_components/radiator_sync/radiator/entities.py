@@ -55,6 +55,7 @@ class RadiatorSyncRoomClimate(ClimateEntity):
 
     async def on_update(self):
         self._attr_current_temperature = self.radiator_state.current_temperature()
+        self._attr_target_temperature = self.radiator_state.target_temperature()
         self._attr_current_humidity = self.radiator_state.current_humidity()
         self._attr_hvac_action = (
             HVACAction.HEATING if self.radiator_state.is_heating() else HVACAction.IDLE

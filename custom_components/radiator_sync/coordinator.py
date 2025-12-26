@@ -1,4 +1,4 @@
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry

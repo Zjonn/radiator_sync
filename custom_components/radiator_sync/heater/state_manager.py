@@ -1,4 +1,4 @@
-from typing import Optional, Callable, List
+from typing import Optional, Callable
 from datetime import datetime
 
 from homeassistant.core import callback

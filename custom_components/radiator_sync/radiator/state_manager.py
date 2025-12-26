@@ -7,7 +7,7 @@ from homeassistant.helpers.entity import DeviceInfo
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..coordinator import Coordinator
+    from ..coordinator import RadiatorSyncCoordinator
 
 
 from ..const import (
@@ -30,7 +30,7 @@ class RadiatorStateManager:
 
     MAX_DELTA = 2.0  # 100% demand if ΔT >= 2°C
 
-    def __init__(self, coordinator: "Coordinator", config: dict) -> None:
+    def __init__(self, coordinator: "RadiatorSyncCoordinator", config: dict) -> None:
         self.coordinator = coordinator
         opts = coordinator.entry.options
 
@@ -49,7 +49,6 @@ class RadiatorStateManager:
         self._climate_min_temp = None
         self._climate_max_temp = None
 
-        self._listeners: list[Any] = []
         self._unsubs: list[Callable] = []
 
     async def _persist(self):
@@ -78,14 +77,9 @@ class RadiatorStateManager:
     # Registration and state read
     # ----------------------------
 
-    def register(self, entity: Any):
-        """Registers an entity that should refresh when state changes."""
-        self._listeners.append(entity)
-
     async def notify(self):
-        """Notifies registered entities to refresh HA state."""
-        for s in self._listeners:
-            await s.on_update()
+        """Notifies coordinator to refresh HA state."""
+        await self.coordinator.async_refresh_entities()
 
         # also apply linked climate control if target & current available
         await self._apply_climate_control()

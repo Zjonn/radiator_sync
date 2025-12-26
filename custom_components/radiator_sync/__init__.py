@@ -2,7 +2,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN, CONF_ROOMS
-from .coordinator import Coordinator
+from .coordinator import RadiatorSyncCoordinator
 
 import logging
 
@@ -17,8 +17,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Create coordinator ONCE per entry
     heater_conf = entry.data
-    rooms_conf = entry.options.get(CONF_ROOMS, [])
-    coordinator = Coordinator(hass, entry, heater_conf, rooms_conf)
+    rooms_conf = entry.options.get(CONF_ROOMS, {})
+    coordinator = RadiatorSyncCoordinator(hass, entry, heater_conf, rooms_conf)
 
     hass.data[DOMAIN][entry.entry_id] = {
         "coordinator": coordinator,

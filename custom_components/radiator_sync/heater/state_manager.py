@@ -11,7 +11,7 @@ from homeassistant.helpers.device_registry import async_get as async_get_dev_reg
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..coordinator import Coordinator
+    from ..coordinator import RadiatorSyncCoordinator
 
 from ..const import CONF_HEATER, CONF_MIN_ON, CONF_MIN_OFF, DOMAIN
 
@@ -19,7 +19,7 @@ from ..const import CONF_HEATER, CONF_MIN_ON, CONF_MIN_OFF, DOMAIN
 class HeaterStateManager:
     """Tracks boiler runtime, cycles and running state, and manages HA subscription."""
 
-    def __init__(self, coordinator: "Coordinator", config):
+    def __init__(self, coordinator: "RadiatorSyncCoordinator", config):
         self.coordinator = coordinator
         opts = coordinator.entry.options
 
@@ -39,7 +39,6 @@ class HeaterStateManager:
         self.threshold_heat_demand = opts.get("threshold_heat_demand", 0.0)
         self._override_mode = opts.get("override_mode", "auto")
 
-        self._listeners: List = []
         self._unsub: Optional[Callable] = None
 
     async def _persist(self):
@@ -143,12 +142,8 @@ class HeaterStateManager:
     # Listener registration
     # ----------------------------
 
-    def register(self, listener):
-        self._listeners.append(listener)
-
     async def notify(self):
-        for e in self._listeners:
-            await e.on_update()
+        await self.coordinator.async_refresh_entities()
 
     # ----------------------------
     # Heater state change logic

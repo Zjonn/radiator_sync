@@ -1,19 +1,20 @@
-from .radiator.entities import RadiatorSyncRoomClimate
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+
 from .const import DOMAIN
-from .coordinator import Coordinator
-
-import logging
-
-_LOGGER = logging.getLogger(__name__)
+from .radiator.entities import RadiatorSyncRoomClimate
+from .coordinator import RadiatorSyncCoordinator
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
-    """Setup climate entities for each room."""
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+):
+    """Setup climate entities for all managed rooms."""
 
-    coordinator: Coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
-    room_entities = [RadiatorSyncRoomClimate(room) for room in coordinator.get_rooms()]
+    coordinator: RadiatorSyncCoordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
 
-    async_add_entities(room_entities, True)
-
-    for room, entitie in zip(coordinator.get_rooms(), room_entities):
-        room.register(entitie)
+    entities = [RadiatorSyncRoomClimate(room) for room in coordinator.get_rooms()]
+    async_add_entities(entities)

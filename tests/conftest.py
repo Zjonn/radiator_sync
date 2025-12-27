@@ -36,6 +36,7 @@ def mock_config_entry():
                 }
             }
         },
+        entry_id="test_entry_id",
     )
 
 

@@ -4,7 +4,7 @@ from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
 from .heater.entities import HeaterActiveBinary
-from .coordinator import Coordinator
+from .coordinator import RadiatorSyncCoordinator
 
 
 async def async_setup_entry(
@@ -12,11 +12,15 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ):
-    """Setup the heater binary_sensor."""
+    """Setup binary sensors: heater active status."""
 
-    coordinator: Coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
-    heater = coordinator.heater
+    coordinator: RadiatorSyncCoordinator = hass.data[DOMAIN][entry.entry_id][
+        "coordinator"
+    ]
+    heater_manager = coordinator.heater
 
-    ent = HeaterActiveBinary(heater)
-    async_add_entities([ent])
-    heater.register(ent)
+    entities = [
+        HeaterActiveBinary(heater_manager),
+    ]
+
+    async_add_entities(entities)

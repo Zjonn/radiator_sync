@@ -1,6 +1,6 @@
 {
   "name": "Radiator Sync (Home Assistant)",
-  "image": "ghcr.io/home-assistant/devcontainer:2-addons",
+  "image": "mcr.microsoft.com/devcontainers/python:3.13-bookworm",
   "appPort": [
     "8123:8123"
   ],
@@ -14,15 +14,25 @@
       "extensions": [
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "esbenp.prettier-vscode"
-      ]
+        "esbenp.prettier-vscode",
+        "visualstudioexptteam.vscodeintellicode"
+      ],
+      "settings": {
+        "python.testing.pytestEnabled": true,
+        "python.testing.unittestEnabled": false,
+        "python.testing.nosetestsEnabled": false,
+        "python.testing.pytestArgs": [
+          "tests"
+        ],
+        "python.analysis.extraPaths": [
+          "${containerWorkspaceFolder}/custom_components"
+        ],
+        "python.analysis.typeCheckingMode": "basic"
+      }
     }
   },
   "mounts": [
     "type=volume,source=ha-config,target=/config"
-  ],
-  "runArgs": [
-    "--privileged"
   ],
   "remoteUser": "root"
 }

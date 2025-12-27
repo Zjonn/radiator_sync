@@ -1,13 +1,13 @@
-from typing import Optional, Callable, Any
+from typing import Optional, Callable, Mapping, Any
 
 from homeassistant.core import callback
 from homeassistant.helpers.event import async_track_state_change_event
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceInfo
 
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..coordinator import Coordinator
+    from ..coordinator import RadiatorSyncCoordinator
 
 
 from ..const import (
@@ -30,9 +30,10 @@ class RadiatorStateManager:
 
     MAX_DELTA = 2.0  # 100% demand if ΔT >= 2°C
 
-    def __init__(self, coordinator: "Coordinator", config: dict) -> None:
+    def __init__(
+        self, coordinator: "RadiatorSyncCoordinator", config: Mapping[str, Any]
+    ) -> None:
         self.coordinator = coordinator
-        opts = coordinator.entry.options
 
         self.room_name = config.get(CONF_NAME)
         self.sensor_temp = config.get(CONF_SENSOR_TEMP)
@@ -42,24 +43,26 @@ class RadiatorStateManager:
 
         self._is_heating = False
         self._current_temp: Optional[float] = None
-        self._target_temp: Optional[float] = opts.get(
-            f"{self.room_name}_target_temp", 21.0
-        )
+        self._target_temp: Optional[float] = 21.0
         self._current_humidity: Optional[float] = None
-        self._listeners: list[Any] = []
+        self._climate_min_temp = None
+        self._climate_max_temp = None
+
         self._unsubs: list[Callable] = []
 
+    def load_state(self, state: dict):
+        """Load state from persistence."""
+        if "target_temp" in state:
+            self._target_temp = state["target_temp"]
+
+    def get_state(self) -> dict:
+        """Get state for persistence."""
+        return {
+            "target_temp": self._target_temp,
+        }
+
     async def _persist(self):
-        entry = self.coordinator.entry
-        new_opts = dict(entry.options)
-
-        new_opts.update(
-            {
-                f"{self.room_name}_target_temp": self._target_temp,
-            }
-        )
-
-        self.coordinator.hass.config_entries.async_update_entry(entry, options=new_opts)
+        await self.coordinator.async_save_runtime_state()
 
     def device_info(self) -> DeviceInfo:
         return DeviceInfo(
@@ -68,21 +71,18 @@ class RadiatorStateManager:
             },
             name=f"{self.room_name}",
             manufacturer="RadiatorSync",
-            model=self.climate_target or "Generic Radiator",
+            model=str(self.climate_target)
+            if self.climate_target
+            else "Generic Radiator",
         )
 
     # ----------------------------
     # Registration and state read
     # ----------------------------
 
-    def register(self, entity: Any):
-        """Registers an entity that should refresh when state changes."""
-        self._listeners.append(entity)
-
     async def notify(self):
-        """Notifies registered entities to refresh HA state."""
-        for s in self._listeners:
-            await s.on_update()
+        """Notifies coordinator to refresh HA state."""
+        await self.coordinator.async_refresh_entities()
 
         # also apply linked climate control if target & current available
         await self._apply_climate_control()
@@ -106,7 +106,7 @@ class RadiatorStateManager:
         if self._current_temp is None or self._target_temp is None:
             return 0
 
-        delta = max(0.0, (self._target_temp + self.hysteresis) - self._current_temp)
+        delta = max(0.0, self._target_temp - self._current_temp)
         return round(min(delta / self.MAX_DELTA, 1.0) * 100.0)
 
     # ----------------------------
@@ -125,10 +125,10 @@ class RadiatorStateManager:
     # ----------------------------
 
     async def _apply_climate_control(self):
-        """Modify linked climate temperature depending on temp/hysteresis window."""
+        """Set climate to min/max temperature instead of ±5 offset."""
 
         if not self.climate_target:
-            return  # climate optional
+            return
 
         if self._current_temp is None or self._target_temp is None:
             return
@@ -136,17 +136,36 @@ class RadiatorStateManager:
         low = self._target_temp - self.hysteresis
         high = self._target_temp + self.hysteresis
 
-        # too cold -> boost heating
+        # too cold → go to max
         if self._current_temp < low:
-            await self._set_climate_temp(self._target_temp + 5)
+            _, max_temp = await self._get_climate_min_max()
+            await self._set_climate_temp(high + 5 if max_temp is None else max_temp)
             self._is_heating = True
             return
 
-        # too warm -> reduce heating
+        # too warm → go to min
         elif self._current_temp > high:
-            await self._set_climate_temp(self._target_temp - 5)
+            min_temp, _ = await self._get_climate_min_max()
+            await self._set_climate_temp(low - 5 if min_temp is None else min_temp)
             self._is_heating = False
             return
+
+    async def _get_climate_min_max(self):
+        """Fetch min/max temperature from climate entity, if exists."""
+        if not self.climate_target:
+            return None, None
+
+        if self._climate_min_temp and self._climate_max_temp:
+            return self._climate_min_temp, self._climate_max_temp
+
+        cl_state = self.coordinator.hass.states.get(self.climate_target)
+        if cl_state is None:
+            return None, None
+
+        self._climate_min_temp = cl_state.attributes.get("min_temp")
+        self._climate_max_temp = cl_state.attributes.get("max_temp")
+
+        return self._climate_min_temp, self._climate_max_temp
 
     async def _set_climate_temp(self, value: float):
         """Send set_temperature only if entity exists."""
@@ -189,6 +208,7 @@ class RadiatorStateManager:
                         f"Radiator '{self.room_name}': invalid temperature state: {st.state}: {e}"
                     )
                 await self.notify()
+                await self._apply_climate_control()
 
         @callback
         async def hw_target_update(ev):
@@ -218,15 +238,15 @@ class RadiatorStateManager:
                 )
             )
 
-        # initial values read
-        st = self.coordinator.hass.states.get(self.sensor_temp)
-        if st:
-            try:
-                self._current_temp = float(st.state)
-            except Exception as e:
-                _LOGGER.error(
-                    f"Radiator '{self.room_name}': invalid temperature state: {st.state}: {e}"
-                )
+        if self.sensor_temp:
+            cl_state = self.coordinator.hass.states.get(self.sensor_temp)
+            if cl_state:
+                try:
+                    self._current_temp = float(cl_state.state)
+                except Exception as e:
+                    _LOGGER.error(
+                        f"Radiator '{self.room_name}': invalid temperature state: {cl_state.state}: {e}"
+                    )
 
         if self.climate_target:
             st = self.coordinator.hass.states.get(self.climate_target)

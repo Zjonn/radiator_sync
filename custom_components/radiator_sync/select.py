@@ -4,7 +4,7 @@ from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
 from .heater.entities import HeaterModeSelect
-from .coordinator import Coordinator
+from .coordinator import RadiatorSyncCoordinator
 
 
 async def async_setup_entry(
@@ -12,7 +12,15 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ):
-    """Setup the heater select entity."""
+    """Setup mode selection entity."""
 
-    coordinator: Coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
-    async_add_entities([HeaterModeSelect(coordinator.heater)])
+    coordinator: RadiatorSyncCoordinator = hass.data[DOMAIN][entry.entry_id][
+        "coordinator"
+    ]
+    heater_manager = coordinator.heater
+
+    entities = [
+        HeaterModeSelect(heater_manager),
+    ]
+
+    async_add_entities(entities)

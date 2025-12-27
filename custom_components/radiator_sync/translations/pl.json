@@ -24,7 +24,8 @@
     "abort": {
       "name_exists": "Pokój o tej nazwie już istnieje.",
       "no_rooms": "Nie skonfigurowano żadnych pokoi.",
-      "internal_error": "Wystąpił nieoczekiwany błąd."
+      "internal_error": "Wystąpił nieoczekiwany błąd.",
+      "preset_exists": "Ustawienie o tej nazwie już istnieje."
     },
     "step": {
       "init": {
@@ -69,6 +70,72 @@
         "data": {
           "name": "Pokój"
         }
+      },
+      "manage_presets": {
+        "title": "Zarządzaj ustawieniami",
+        "description": "Dodaj, edytuj lub usuń globalne ustawienia temperatury.",
+        "data": {
+          "preset_action": "Działanie"
+        }
+      },
+      "add_preset": {
+        "title": "Dodaj ustawienie",
+        "description": "Zdefiniuj nowe ustawienie temperatury.",
+        "data": {
+          "name": "Nazwa",
+          "temperature": "Temperatura"
+        }
+      },
+      "edit_preset": {
+        "title": "Edytuj ustawienie",
+        "description": "Zmień istniejące ustawienie.",
+        "data": {
+          "name": "Ustawienie",
+          "temperature": "Temperatura"
+        }
+      },
+      "remove_preset": {
+        "title": "Usuń ustawienie",
+        "description": "Wybierz ustawienie do usunięcia.",
+        "data": {
+          "name": "Ustawienie"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "room_heat_demand": {
+        "name": "Zapotrzebowanie na ciepło"
+      },
+      "heater_heat_demand": {
+        "name": "Zapotrzebowanie na ciepło pieca"
+      }
+    },
+    "climate": {
+      "room_climate": {
+        "name": "Grzejnik"
+      }
+    },
+    "number": {
+      "heater_threshold": {
+        "name": "Próg zapotrzebowania na ciepło pieca"
+      }
+    },
+    "binary_sensor": {
+      "heater_active": {
+        "name": "Piec aktywny"
+      }
+    },
+    "select": {
+      "heater_mode": {
+        "name": "Tryb pieca"
+      },
+      "global_preset": {
+        "name": "Globalne ustawienie",
+        "state": {
+          "none": "Ręczny"
+        }
       }
     }
   },
@@ -107,7 +174,15 @@
       "options": {
         "add_room": "Dodaj pokój",
         "edit_room": "Edytuj pokój",
-        "remove_room": "Usuń pokój"
+        "remove_room": "Usuń pokój",
+        "manage_presets": "Zarządzaj ustawieniami"
+      }
+    },
+    "preset_action": {
+      "options": {
+        "add": "Dodaj nowe",
+        "edit": "Edytuj istniejące",
+        "remove": "Usuń"
       }
     }
   }

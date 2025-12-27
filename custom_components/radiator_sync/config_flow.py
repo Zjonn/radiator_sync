@@ -16,6 +16,8 @@ from .const import (
     CONF_SENSOR_HUM,
     CONF_HYSTERESIS,
     DEFAULT_HYSTERESIS,
+    CONF_PRESETS,
+    DEFAULT_PRESETS,
     CONF_MIN_ON,
     CONF_MIN_OFF,
     DEFAULT_MIN_ON,
@@ -36,7 +38,9 @@ class RadiatorSyncConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_MIN_OFF: user_input.get(CONF_MIN_OFF, DEFAULT_MIN_OFF),
             }
             return self.async_create_entry(
-                title="RadiatorSync", data=data, options={CONF_ROOMS: {}}
+                title="RadiatorSync",
+                data=data,
+                options={CONF_ROOMS: {}, CONF_PRESETS: DEFAULT_PRESETS},
             )
 
         schema = vol.Schema(
@@ -62,6 +66,9 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
     def __init__(self, entry: config_entries.ConfigEntry) -> None:
         self.entry = entry
         self.rooms: Dict[str, Dict[str, Any]] = dict(entry.options.get(CONF_ROOMS, {}))
+        self.presets: Dict[str, float] = dict(
+            entry.options.get(CONF_PRESETS, DEFAULT_PRESETS)
+        )
         self.room_name: str | None = None
 
     async def async_step_init(self, user_input=None):
@@ -74,6 +81,8 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
                 return await self.async_step_edit_room()
             if action == "remove_room":
                 return await self.async_step_remove_room()
+            if action == "manage_presets":
+                return await self.async_step_manage_presets()
 
         schema = vol.Schema(
             {
@@ -83,6 +92,7 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
                             {"value": "add_room", "label": "add_room"},
                             {"value": "edit_room", "label": "edit_room"},
                             {"value": "remove_room", "label": "remove_room"},
+                            {"value": "manage_presets", "label": "manage_presets"},
                         ],
                         translation_key="operation",
                     )
@@ -210,7 +220,110 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
 
     # ---------- WRITE OPTIONS ----------
     async def _save_and_restart_options(self):
-        return self.async_create_entry(title="", data={CONF_ROOMS: self.rooms})
+        return self.async_create_entry(
+            title="", data={CONF_ROOMS: self.rooms, CONF_PRESETS: self.presets}
+        )
+
+    # ---------- MANAGE PRESETS ----------
+    async def async_step_manage_presets(self, user_input=None):
+        """Manage global presets."""
+        if user_input is not None:
+            action = user_input["preset_action"]
+            if action == "add":
+                return await self.async_step_add_preset()
+            if action == "edit":
+                return await self.async_step_edit_preset()
+            if action == "remove":
+                return await self.async_step_remove_preset()
+
+        return self.async_show_form(
+            step_id="manage_presets",
+            data_schema=vol.Schema(
+                {
+                    vol.Required("preset_action"): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=["add", "edit", "remove"],
+                            translation_key="preset_action",
+                        )
+                    )
+                }
+            ),
+        )
+
+    async def async_step_add_preset(self, user_input=None):
+        """Add a new preset."""
+        if user_input is not None:
+            name = user_input["name"].strip()
+            if name in self.presets:
+                return self.async_show_form(
+                    step_id="add_preset",
+                    data_schema=self._get_preset_schema(),
+                    errors={"name": "preset_exists"},
+                )
+            self.presets[name] = user_input["temperature"]
+            return await self._save_and_restart_options()
+
+        return self.async_show_form(
+            step_id="add_preset", data_schema=self._get_preset_schema()
+        )
+
+    async def async_step_edit_preset(self, user_input=None):
+        """Edit an existing preset."""
+        if user_input is not None:
+            if "name" in user_input and "temperature" not in user_input:
+                # Selected name, now show temp
+                name = user_input["name"]
+                return self.async_show_form(
+                    step_id="edit_preset",
+                    data_schema=self._get_preset_schema(
+                        name, self.presets.get(name, 21.0)
+                    ),
+                )
+            # Saved temp
+            name = user_input["name"]
+            self.presets[name] = user_input["temperature"]
+            return await self._save_and_restart_options()
+
+        return self.async_show_form(
+            step_id="edit_preset",
+            data_schema=vol.Schema(
+                {
+                    vol.Required("name"): selector.SelectSelector(
+                        selector.SelectSelectorConfig(options=list(self.presets.keys()))
+                    )
+                }
+            ),
+        )
+
+    async def async_step_remove_preset(self, user_input=None):
+        """Remove a preset."""
+        if user_input is not None:
+            name = user_input["name"]
+            self.presets.pop(name, None)
+            return await self._save_and_restart_options()
+
+        return self.async_show_form(
+            step_id="remove_preset",
+            data_schema=vol.Schema(
+                {
+                    vol.Required("name"): selector.SelectSelector(
+                        selector.SelectSelectorConfig(options=list(self.presets.keys()))
+                    )
+                }
+            ),
+        )
+
+    def _get_preset_schema(self, name: str = "", temp: float = 21.0):
+        return vol.Schema(
+            {
+                vol.Required("name", default=name): str,
+                vol.Required("temperature", default=temp): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=5, max=30, step=0.5, mode=selector.NumberSelectorMode.BOX
+                    )
+                ),
+            }
+        )
 
     async def _delete_room_entities(self, room_name: str) -> None:
         er_reg = er.async_get(self.hass)

@@ -56,7 +56,9 @@ class RadiatorSyncRoomClimate(
     _attr_translation_key = "room_climate"
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF]
-    _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
+    _attr_supported_features = (
+        ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE
+    )
     _attr_hvac_mode = HVACMode.HEAT
 
     def __init__(self, state: RadiatorStateManager):
@@ -75,6 +77,8 @@ class RadiatorSyncRoomClimate(
         self._attr_current_temperature = self.radiator_state.current_temperature()
         self._attr_target_temperature = self.radiator_state.target_temperature()
         self._attr_current_humidity = self.radiator_state.current_humidity()
+        self._attr_preset_modes = self.radiator_state.preset_modes
+        self._attr_preset_mode = self.radiator_state.preset_mode
         self._attr_hvac_action = cast(
             HVACAction,
             (
@@ -97,6 +101,10 @@ class RadiatorSyncRoomClimate(
     async def async_set_temperature(self, **kwargs):
         if ATTR_TEMPERATURE in kwargs:
             await self.radiator_state.set_target_temperature(kwargs[ATTR_TEMPERATURE])
+
+    async def async_set_preset_mode(self, preset_mode: str):
+        """Set new preset mode."""
+        await self.radiator_state.set_preset_mode(preset_mode)
 
     async def async_added_to_hass(self):
         await super().async_added_to_hass()

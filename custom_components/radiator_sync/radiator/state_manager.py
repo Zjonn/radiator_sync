@@ -18,6 +18,8 @@ from ..const import (
     CONF_SENSOR_HUM,
     CONF_HYSTERESIS,
     DEFAULT_HYSTERESIS,
+    CONF_PRESETS,
+    DEFAULT_PRESETS,
 )
 
 import logging
@@ -47,18 +49,46 @@ class RadiatorStateManager:
         self._current_humidity: Optional[float] = None
         self._climate_min_temp = None
         self._climate_max_temp = None
+        self._active_preset: Optional[str] = None
 
         self._unsubs: list[Callable] = []
+
+    @property
+    def presets(self) -> dict[str, float]:
+        """Return preset mapping from options."""
+        return self.coordinator.entry.options.get(CONF_PRESETS, DEFAULT_PRESETS)
+
+    @property
+    def preset_modes(self) -> list[str]:
+        """Return list of available preset modes."""
+        return list(self.presets.keys())
+
+    @property
+    def preset_mode(self) -> Optional[str]:
+        """Return current preset mode."""
+        return self._active_preset
+
+    async def set_preset_mode(self, preset_mode: str):
+        """Set new preset mode and update target temperature."""
+        if preset_mode not in self.presets:
+            _LOGGER.error("Preset mode %s not found in %s", preset_mode, self.room_name)
+            return
+
+        self._active_preset = preset_mode
+        await self.set_target_temperature(self.presets[preset_mode])
 
     def load_state(self, state: dict):
         """Load state from persistence."""
         if "target_temp" in state:
             self._target_temp = state["target_temp"]
+        if "active_preset" in state:
+            self._active_preset = state["active_preset"]
 
     def get_state(self) -> dict:
         """Get state for persistence."""
         return {
             "target_temp": self._target_temp,
+            "active_preset": self._active_preset,
         }
 
     async def _persist(self):
@@ -115,6 +145,10 @@ class RadiatorStateManager:
 
     async def set_target_temperature(self, new_t: float):
         """Update target and forward to actual thermostat entity, if exists."""
+        # If the new temperature doesn't match the current preset's temperature, clear the preset
+        if self._active_preset and self.presets.get(self._active_preset) != new_t:
+            self._active_preset = None
+
         self._target_temp = new_t
         await self._apply_climate_control()
         await self._persist()

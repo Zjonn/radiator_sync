@@ -9,15 +9,17 @@
 Home Assistant integration that synchronizes a central heater with room thermostats and temperature sensors.
 
 ## Features
-- Config entry for boiler switch with anti short-cycle timers.
-- Options flow to manage rooms with target temperatures, hysteresis and optional humidity sensors.
-- Automatically boosts or reduces the linked climate entity temperature to keep rooms within the hysteresis window.
-- Exposes helper entities (binary_sensor, select, number, sensor) for override mode, demand threshold and runtime statistics.
-- Fully config-flow driven; no YAML required.
+- **Central Heater Control**: Manages a boiler or heater switch with configurable anti short-cycle timers.
+- **Dynamic Room Management**: Add, edit, or remove rooms via an intuitive options flow.
+- **Thermostat Synchronization**: Automatically boosts or reduces linked climate entity temperatures based on room temperature and hysteresis.
+- **Helper Entities**:
+    - **Room**: Binary sensor for heat demand, sensor for target temperature.
+    - **Heater**: Select for override mode, number for demand threshold, and sensor for runtime statistics.
+- **Fully Configurable**: Entirely driven by config flow and options flow; no YAML required.
 
 ## Installation via HACS
 1. Add this repository to HACS as an Integration (Custom repositories -> URL -> Integration). Use your fork URL, e.g. `https://github.com/zjonn/radiator_sync`.
-2. Install Radiator Sync from the HACS Integrations tab.
+2. Install **Radiator Sync** from the HACS Integrations tab.
 3. Restart Home Assistant.
 
 ## Manual installation
@@ -25,9 +27,14 @@ Copy `custom_components/radiator_sync` into your Home Assistant `config/custom_c
 
 ## Configuration
 1. In Home Assistant, go to **Settings > Devices & Services > Add Integration** and search for **Radiator Sync**.
-2. Pick the switch entity that controls your boiler/heater and optionally adjust the minimum on/off times (seconds).
-3. Open the integration options to add rooms: name, room climate entity, temperature sensor, optional humidity sensor and hysteresis.
-4. Each room exposes entities for heat demand and target temperature; the heater exposes runtime and override controls.
+2. **Initial Setup**: Pick the switch entity that controls your boiler/heater and set the minimum ON and OFF times (in seconds).
+3. **Adding Rooms**: After the initial setup, click **Configure** (or Options) on the Radiator Sync integration card.
+4. Select **add_room** and provide:
+    - **Name**: A unique name for the room.
+    - **Climate Entity**: The thermostat or radiator valve to control.
+    - **Temperature Sensor**: The primary sensor for room temperature.
+    - **Humidity Sensor** (Optional): A sensor for room humidity tracking.
+    - **Hysteresis**: The temperature window for triggering heat demand (default: 0.3°C).
 
 ## Development container
 - Requires Docker, VS Code and the Dev Containers extension.
@@ -38,4 +45,4 @@ Copy `custom_components/radiator_sync` into your Home Assistant `config/custom_c
 
 ## Notes
 - Update `manifest.json` version and create a release when publishing new builds for HACS.
-- Issue tracker and documentation are assumed to live at `https://github.com/zjonn/radiator_sync`; adjust if your remote differs.
+- Issue tracker and documentation are located at `https://github.com/zjonn/radiator_sync`.

@@ -1,5 +1,7 @@
 # Radiator Sync
 
+[![codecov](https://codecov.io/gh/zjonn/radiator_sync/graph/badge.svg?token=ORB0M1Z2U4)](https://codecov.io/gh/zjonn/radiator_sync)
+
 <p align="center">
   <img src="assets/logo.png" alt="Radiator Sync logo" width="240">
 </p>

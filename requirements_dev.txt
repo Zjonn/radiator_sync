@@ -1,0 +1,7 @@
+pytest
+pytest-homeassistant-custom-component
+pytest-asyncio
+ruff
+pyright
+# For similarity with CI
+homeassistant-stubs

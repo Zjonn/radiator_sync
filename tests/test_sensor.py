@@ -4,7 +4,7 @@
 async def test_sensors(hass, setup_integration):
     """Test sensor setup and state."""
     # Check heater heat demand sensor
-    state = hass.states.get("sensor.heater_heater_heat_demand")
+    state = hass.states.get("sensor.radiator_sync_test_entry_id_heater_heat_demand")
     assert state is not None
     # Initial setup in conftest doesn't trigger orchestration to 50.0 immediately
     # Unless target_temp was set to something that causes 50% demand relative to 20.0
@@ -13,6 +13,8 @@ async def test_sensors(hass, setup_integration):
     assert state.state == "50.0"
 
     # Check room heat demand sensor
-    state = hass.states.get("sensor.living_room_heat_demand")
+    state = hass.states.get(
+        "sensor.radiator_sync_test_entry_id_living_room_heat_demand"
+    )
     assert state is not None
     assert state.state == "50"

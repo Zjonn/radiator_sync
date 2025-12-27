@@ -6,8 +6,7 @@ from homeassistant.const import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.core import callback
 
-from radiator_sync.coordinator import RadiatorSyncCoordinator
-
+from ..coordinator import RadiatorSyncCoordinator
 
 from .state_manager import HeaterStateManager
 

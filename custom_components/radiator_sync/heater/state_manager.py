@@ -31,7 +31,7 @@ class HeaterStateManager:
         self.last_off: Optional[datetime] = None
 
         self.heat_demand = 0.0
-        self.threshold_heat_demand = 0.0
+        self.threshold_heat_demand = 10.0
         self._override_mode = "auto"
 
         self._unsub: Optional[Callable] = None

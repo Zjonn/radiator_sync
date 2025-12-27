@@ -18,7 +18,8 @@ _LOGGER = logging.getLogger(__name__)
 class HeaterThresholdNumber(CoordinatorEntity[RadiatorSyncCoordinator], NumberEntity):
     """Configurable threshold for minimum required heat demand."""
 
-    _attr_name = "Heater Threshold Heat Demand"
+    _attr_has_entity_name = True
+    _attr_translation_key = "heater_threshold"
     _attr_native_unit_of_measurement = "%"
     _attr_entity_category = EntityCategory.CONFIG
     _attr_mode = NumberMode.AUTO
@@ -47,7 +48,8 @@ class HeaterActiveBinary(
 ):
     """Shows if heater is currently heating."""
 
-    _attr_name = "Heater Active"
+    _attr_has_entity_name = True
+    _attr_translation_key = "heater_active"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def __init__(self, state: HeaterStateManager):
@@ -74,7 +76,8 @@ class HeaterActiveBinary(
 class HeaterHeatDemand(CoordinatorEntity[RadiatorSyncCoordinator], SensorEntity):
     """Number of boiler cycles."""
 
-    _attr_name = "Heater Heat Demand"
+    _attr_has_entity_name = True
+    _attr_translation_key = "heater_heat_demand"
     _attr_native_unit_of_measurement = "%"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
 
@@ -98,7 +101,8 @@ class HeaterModeSelect(CoordinatorEntity[RadiatorSyncCoordinator], SelectEntity)
     - off (force boiler off)
     """
 
-    _attr_name = "Heater Mode"
+    _attr_has_entity_name = True
+    _attr_translation_key = "heater_mode"
     _attr_options = ["auto", "on", "off"]
 
     def __init__(self, state: HeaterStateManager):

@@ -72,6 +72,36 @@
       }
     }
   },
+  "entity": {
+    "sensor": {
+      "room_heat_demand": {
+        "name": "Zapotrzebowanie na ciepło"
+      },
+      "heater_heat_demand": {
+        "name": "Zapotrzebowanie na ciepło pieca"
+      }
+    },
+    "climate": {
+      "room_climate": {
+        "name": "Grzejnik"
+      }
+    },
+    "number": {
+      "heater_threshold": {
+        "name": "Próg zapotrzebowania na ciepło pieca"
+      }
+    },
+    "binary_sensor": {
+      "heater_active": {
+        "name": "Piec aktywny"
+      }
+    },
+    "select": {
+      "heater_mode": {
+        "name": "Tryb pieca"
+      }
+    }
+  },
   "selector": {
     "operation": {
       "options": {

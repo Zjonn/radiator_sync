@@ -22,6 +22,10 @@ from ..coordinator import RadiatorSyncCoordinator
 
 
 class RadiatorRoomHeatDemand(CoordinatorEntity[RadiatorSyncCoordinator], SensorEntity):
+    """Current heat demand for the room."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "room_heat_demand"
     _attr_native_unit_of_measurement = "%"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_state_class = SensorStateClass.MEASUREMENT
@@ -29,7 +33,6 @@ class RadiatorRoomHeatDemand(CoordinatorEntity[RadiatorSyncCoordinator], SensorE
     def __init__(self, state: RadiatorStateManager):
         super().__init__(state.coordinator)
         self.radiator_state = state
-        self._attr_name = f"{state.room_name} Heat Demand"
         self._attr_unique_id = (
             f"{state.coordinator.entry.entry_id}_{state.room_name}_heat_demand"
         )
@@ -47,6 +50,10 @@ class RadiatorSyncRoomClimate(
     CoordinatorEntity[RadiatorSyncCoordinator],
     ClimateEntity,
 ):
+    """Climate entity for a radiator sync controlled room."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "room_climate"
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF]
     _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
@@ -55,7 +62,6 @@ class RadiatorSyncRoomClimate(
     def __init__(self, state: RadiatorStateManager):
         super().__init__(state.coordinator)
         self.radiator_state = state
-        self._attr_name = f"{state.room_name} Radiator"
         self._attr_unique_id = (
             f"{state.coordinator.entry.entry_id}_{state.room_name}_climate"
         )

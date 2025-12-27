@@ -72,6 +72,36 @@
       }
     }
   },
+  "entity": {
+    "sensor": {
+      "room_heat_demand": {
+        "name": "Heat Demand"
+      },
+      "heater_heat_demand": {
+        "name": "Heater Heat Demand"
+      }
+    },
+    "climate": {
+      "room_climate": {
+        "name": "Radiator"
+      }
+    },
+    "number": {
+      "heater_threshold": {
+        "name": "Heater Threshold Heat Demand"
+      }
+    },
+    "binary_sensor": {
+      "heater_active": {
+        "name": "Heater Active"
+      }
+    },
+    "select": {
+      "heater_mode": {
+        "name": "Heater Mode"
+      }
+    }
+  },
   "selector": {
     "operation": {
       "options": {

@@ -15,7 +15,10 @@ async def test_climate(hass, setup_integration):
     await hass.services.async_call(
         "climate",
         "set_temperature",
-        {"entity_id": "climate.living_room_radiator", "temperature": 22.0},
+        {
+            "entity_id": "climate.living_room_radiator",
+            "temperature": 22.0,
+        },
         blocking=True,
     )
     await hass.async_block_till_done()

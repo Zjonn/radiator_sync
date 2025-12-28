@@ -283,18 +283,13 @@ async def test_options_flow_preset_with_override(hass):
     # The form should now contain 'override_Living Room'
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
-        user_input={
-            "name": "Night",
-            "temperature": 18.5,
-            "override_Living Room": 20.5
-        },
+        user_input={"name": "Night", "temperature": 18.5, "override_Living Room": 20.5},
     )
     assert result["type"] == data_entry_flow.FlowResultType.CREATE_ENTRY
     assert result["data"]["presets"]["Night"] == {
         "default": 18.5,
-        "overrides": {"Living Room": 20.5}
+        "overrides": {"Living Room": 20.5},
     }
-
 
 
 async def test_options_flow_errors(hass):

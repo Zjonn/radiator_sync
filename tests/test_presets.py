@@ -76,18 +76,11 @@ async def test_room_preset_sync(hass, setup_integration):
 async def test_preset_room_override(hass, setup_integration):
     """Test that room-specific overrides work."""
     entry = setup_integration
-    
+
     # Update config entry with an override for 'Living Room'
     new_options = {
         **entry.options,
-        "presets": {
-            "Night": {
-                "default": 19.5,
-                "overrides": {
-                    "Living Room": 22.5
-                }
-            }
-        }
+        "presets": {"Night": {"default": 19.5, "overrides": {"Living Room": 22.5}}},
     }
     hass.config_entries.async_update_entry(entry, options=new_options)
     await hass.async_block_till_done()
@@ -95,7 +88,7 @@ async def test_preset_room_override(hass, setup_integration):
     climate_entities = hass.states.async_entity_ids("climate")
     # In conftest.py, we have 'Living Room'
     living_room_entity = next(e for e in climate_entities if "living_room" in e)
-    
+
     # Apply Night preset to Living Room
     await hass.services.async_call(
         "climate",
@@ -108,4 +101,3 @@ async def test_preset_room_override(hass, setup_integration):
     # Check that override was applied (22.5 instead of default 19.5)
     state = hass.states.get(living_room_entity)
     assert state.attributes.get("temperature") == 22.5
-

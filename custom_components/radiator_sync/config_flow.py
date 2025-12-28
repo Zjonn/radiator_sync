@@ -66,7 +66,7 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
     def __init__(self, entry: config_entries.ConfigEntry) -> None:
         self.entry = entry
         self.rooms: Dict[str, Dict[str, Any]] = dict(entry.options.get(CONF_ROOMS, {}))
-        
+
         # Normalize presets from old format if needed
         raw_presets = entry.options.get(CONF_PRESETS, DEFAULT_PRESETS)
         self.presets: Dict[str, Any] = {}
@@ -274,7 +274,7 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
                     data_schema=self._get_preset_schema(),
                     errors={"name": "preset_exists"},
                 )
-            
+
             # Extract default and overrides
             default_temp = user_input["temperature"]
             overrides = {}
@@ -282,7 +282,7 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
                 key = f"override_{room_name}"
                 if key in user_input and user_input[key] is not None:
                     overrides[room_name] = user_input[key]
-            
+
             self.presets[name] = {"default": default_temp, "overrides": overrides}
             return await self._save_and_restart_options()
 
@@ -303,7 +303,7 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
                         name, preset_data["default"], preset_data.get("overrides", {})
                     ),
                 )
-            
+
             # Saved temp + overrides
             name = user_input["name"]
             default_temp = user_input["temperature"]
@@ -312,7 +312,7 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
                 key = f"override_{room_name}"
                 if key in user_input and user_input[key] is not None:
                     overrides[room_name] = user_input[key]
-            
+
             self.presets[name] = {"default": default_temp, "overrides": overrides}
             return await self._save_and_restart_options()
 
@@ -345,7 +345,12 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
             ),
         )
 
-    def _get_preset_schema(self, name: str = "", temp: float = 21.0, overrides: Dict[str, Any] | None = None):
+    def _get_preset_schema(
+        self,
+        name: str = "",
+        temp: float = 21.0,
+        overrides: Dict[str, Any] | None = None,
+    ):
         overrides = overrides or {}
         schema_dict: Dict[Any, Any] = {
             vol.Required("name", default=name): str,
@@ -357,7 +362,9 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
         }
         for room_name in self.rooms:
             # Add optional overrides for each room
-            schema_dict[vol.Optional(f"override_{room_name}", default=overrides.get(room_name))] = selector.NumberSelector(
+            schema_dict[
+                vol.Optional(f"override_{room_name}", default=overrides.get(room_name))
+            ] = selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     min=5, max=30, step=0.5, mode=selector.NumberSelectorMode.BOX
                 )

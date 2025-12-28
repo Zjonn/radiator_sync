@@ -80,18 +80,18 @@
       },
       "add_preset": {
         "title": "Add Preset",
-        "description": "Define a new temperature preset.",
+        "description": "Define a new temperature preset. You can optionally override the value for specific rooms.",
         "data": {
           "name": "Name",
-          "temperature": "Temperature"
+          "temperature": "Default temperature"
         }
       },
       "edit_preset": {
         "title": "Edit Preset",
-        "description": "Modify an existing preset.",
+        "description": "Modify an existing preset and its room overrides.",
         "data": {
           "name": "Preset",
-          "temperature": "Temperature"
+          "temperature": "Default temperature"
         }
       },
       "remove_preset": {

@@ -55,8 +55,18 @@ class RadiatorStateManager:
 
     @property
     def presets(self) -> dict[str, float]:
-        """Return preset mapping from options."""
-        return self.coordinator.entry.options.get(CONF_PRESETS, DEFAULT_PRESETS)
+        """Return preset mapping from options, resolved for this room."""
+        raw_presets = self.coordinator.entry.options.get(CONF_PRESETS, DEFAULT_PRESETS)
+        resolved_presets = {}
+        for name, data in raw_presets.items():
+            if isinstance(data, (int, float)):
+                resolved_presets[name] = float(data)
+            else:
+                # New format: {"default": float, "overrides": {room_name: float}}
+                default_temp = data.get("default", 21.0)
+                overrides = data.get("overrides", {})
+                resolved_presets[name] = overrides.get(self.room_name, default_temp)
+        return resolved_presets
 
     @property
     def preset_modes(self) -> list[str]:

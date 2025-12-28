@@ -66,9 +66,16 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
     def __init__(self, entry: config_entries.ConfigEntry) -> None:
         self.entry = entry
         self.rooms: Dict[str, Dict[str, Any]] = dict(entry.options.get(CONF_ROOMS, {}))
-        self.presets: Dict[str, float] = dict(
-            entry.options.get(CONF_PRESETS, DEFAULT_PRESETS)
-        )
+        
+        # Normalize presets from old format if needed
+        raw_presets = entry.options.get(CONF_PRESETS, DEFAULT_PRESETS)
+        self.presets: Dict[str, Any] = {}
+        for name, val in raw_presets.items():
+            if isinstance(val, (int, float)):
+                self.presets[name] = {"default": float(val), "overrides": {}}
+            else:
+                self.presets[name] = val
+
         self.room_name: str | None = None
 
     async def async_step_init(self, user_input=None):
@@ -267,7 +274,16 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
                     data_schema=self._get_preset_schema(),
                     errors={"name": "preset_exists"},
                 )
-            self.presets[name] = user_input["temperature"]
+            
+            # Extract default and overrides
+            default_temp = user_input["temperature"]
+            overrides = {}
+            for room_name in self.rooms:
+                key = f"override_{room_name}"
+                if key in user_input and user_input[key] is not None:
+                    overrides[room_name] = user_input[key]
+            
+            self.presets[name] = {"default": default_temp, "overrides": overrides}
             return await self._save_and_restart_options()
 
         return self.async_show_form(
@@ -278,17 +294,26 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
         """Edit an existing preset."""
         if user_input is not None:
             if "name" in user_input and "temperature" not in user_input:
-                # Selected name, now show temp
+                # Selected name, now show temp + overrides
                 name = user_input["name"]
+                preset_data = self.presets.get(name, {"default": 21.0, "overrides": {}})
                 return self.async_show_form(
                     step_id="edit_preset",
                     data_schema=self._get_preset_schema(
-                        name, self.presets.get(name, 21.0)
+                        name, preset_data["default"], preset_data.get("overrides", {})
                     ),
                 )
-            # Saved temp
+            
+            # Saved temp + overrides
             name = user_input["name"]
-            self.presets[name] = user_input["temperature"]
+            default_temp = user_input["temperature"]
+            overrides = {}
+            for room_name in self.rooms:
+                key = f"override_{room_name}"
+                if key in user_input and user_input[key] is not None:
+                    overrides[room_name] = user_input[key]
+            
+            self.presets[name] = {"default": default_temp, "overrides": overrides}
             return await self._save_and_restart_options()
 
         return self.async_show_form(
@@ -320,17 +345,24 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
             ),
         )
 
-    def _get_preset_schema(self, name: str = "", temp: float = 21.0):
-        return vol.Schema(
-            {
-                vol.Required("name", default=name): str,
-                vol.Required("temperature", default=temp): selector.NumberSelector(
-                    selector.NumberSelectorConfig(
-                        min=5, max=30, step=0.5, mode=selector.NumberSelectorMode.BOX
-                    )
-                ),
-            }
-        )
+    def _get_preset_schema(self, name: str = "", temp: float = 21.0, overrides: Dict[str, Any] | None = None):
+        overrides = overrides or {}
+        schema_dict: Dict[Any, Any] = {
+            vol.Required("name", default=name): str,
+            vol.Required("temperature", default=temp): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    min=5, max=30, step=0.5, mode=selector.NumberSelectorMode.BOX
+                )
+            ),
+        }
+        for room_name in self.rooms:
+            # Add optional overrides for each room
+            schema_dict[vol.Optional(f"override_{room_name}", default=overrides.get(room_name))] = selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    min=5, max=30, step=0.5, mode=selector.NumberSelectorMode.BOX
+                )
+            )
+        return vol.Schema(schema_dict)
 
     async def _delete_room_entities(self, room_name: str) -> None:
         er_reg = er.async_get(self.hass)

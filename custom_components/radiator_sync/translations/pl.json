@@ -80,18 +80,18 @@
       },
       "add_preset": {
         "title": "Dodaj ustawienie",
-        "description": "Zdefiniuj nowe ustawienie temperatury.",
+        "description": "Zdefiniuj nowe ustawienie temperatury. Możesz opcjonalnie nadpisać wartość dla konkretnych pomieszczeń.",
         "data": {
           "name": "Nazwa",
-          "temperature": "Temperatura"
+          "temperature": "Domyślna temperatura"
         }
       },
       "edit_preset": {
         "title": "Edytuj ustawienie",
-        "description": "Zmień istniejące ustawienie.",
+        "description": "Zmień istniejące ustawienie i jego nadpisania dla pomieszczeń.",
         "data": {
           "name": "Ustawienie",
-          "temperature": "Temperatura"
+          "temperature": "Domyślna temperatura"
         }
       },
       "remove_preset": {

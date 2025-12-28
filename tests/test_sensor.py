@@ -13,8 +13,6 @@ async def test_sensors(hass, setup_integration):
     assert state.state == "50.0"
 
     # Check room heat demand sensor
-    state = hass.states.get(
-        "sensor.living_room_heat_demand"
-    )
+    state = hass.states.get("sensor.living_room_heat_demand")
     assert state is not None
     assert state.state == "50"

@@ -158,30 +158,37 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
         return self.async_show_form(step_id="edit_room", data_schema=schema)
 
     def _edit_room_form(self, room):
+        def _get_default(key, default_val: Any = vol.UNDEFINED):
+            val = room.get(key)
+            if val is None:
+                return default_val
+            return val
+
         schema = vol.Schema(
             {
-                vol.Required(CONF_NAME, default=room.get(CONF_NAME)): str,
+                vol.Required(CONF_NAME, default=_get_default(CONF_NAME)): str,
                 vol.Optional(
-                    CONF_ROOM_CLIMATE, default=room.get(CONF_ROOM_CLIMATE)
+                    CONF_ROOM_CLIMATE, default=_get_default(CONF_ROOM_CLIMATE)
                 ): selector.EntitySelector(
                     selector.EntitySelectorConfig(domain="climate")
                 ),
                 vol.Required(
-                    CONF_SENSOR_TEMP, default=room.get(CONF_SENSOR_TEMP)
+                    CONF_SENSOR_TEMP, default=_get_default(CONF_SENSOR_TEMP)
                 ): selector.EntitySelector(
                     selector.EntitySelectorConfig(domain="sensor")
                 ),
                 vol.Optional(
-                    CONF_SENSOR_HUM, default=room.get(CONF_SENSOR_HUM)
+                    CONF_SENSOR_HUM, default=_get_default(CONF_SENSOR_HUM)
                 ): selector.EntitySelector(
                     selector.EntitySelectorConfig(domain="sensor")
                 ),
                 vol.Optional(
                     CONF_HYSTERESIS,
-                    default=room.get(CONF_HYSTERESIS, DEFAULT_HYSTERESIS),
+                    default=_get_default(CONF_HYSTERESIS, DEFAULT_HYSTERESIS),
                 ): vol.Coerce(float),
             }
         )
+
         return self.async_show_form(step_id="edit_room_apply", data_schema=schema)
 
     async def async_step_edit_room_apply(self, user_input=None):

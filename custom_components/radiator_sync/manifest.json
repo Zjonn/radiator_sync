@@ -9,5 +9,5 @@
   "issue_tracker": "https://github.com/zjonn/radiator_sync/issues",
   "loggers": ["custom_components.radiator_sync"],
   "requirements": [],
-  "version": "0.3.0"
+  "version": "0.4.0"
 }

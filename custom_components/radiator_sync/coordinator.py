@@ -78,7 +78,7 @@ class RadiatorSyncCoordinator(DataUpdateCoordinator[None]):
         self.async_set_updated_data(None)
 
     def _orchestrate(self):
-        """Calculate and return average heat demand."""
+        """Calculate and return total heat demand."""
         heat_demands = [
             demand
             for room in self.rooms.values()
@@ -88,7 +88,7 @@ class RadiatorSyncCoordinator(DataUpdateCoordinator[None]):
         if not heat_demands:
             return 0.0
 
-        return sum(heat_demands) / len(heat_demands)
+        return sum(heat_demands)
 
     async def on_update(self):
         """Orchestrate heater demand based on room demands."""

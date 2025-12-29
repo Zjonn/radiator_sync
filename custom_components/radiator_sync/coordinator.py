@@ -75,7 +75,7 @@ class RadiatorSyncCoordinator(DataUpdateCoordinator[None]):
     async def async_refresh_entities(self):
         """Notify all managed entities to update their state and run orchestration."""
         await self.on_update()
-        self.async_set_updated_data(None)
+        self.async_update_listeners()
 
     def _orchestrate(self):
         """Calculate and return total heat demand."""

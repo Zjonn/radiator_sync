@@ -4,7 +4,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.components.select import SelectEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, CONF_PRESETS, DEFAULT_PRESETS
+from .const import DOMAIN, CONF_PRESETS
 from .heater.entities import HeaterModeSelect
 from .coordinator import RadiatorSyncCoordinator
 
@@ -41,7 +41,7 @@ class GlobalPresetSelect(CoordinatorEntity[RadiatorSyncCoordinator], SelectEntit
         self._update_attr()
 
     def _update_attr(self):
-        presets = self.coordinator.entry.options.get(CONF_PRESETS, DEFAULT_PRESETS)
+        presets = self.coordinator.entry.options.get(CONF_PRESETS, {})
         self._attr_options = ["none"] + list(presets.keys())
 
         # Check if all rooms have the same preset

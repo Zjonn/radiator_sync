@@ -19,7 +19,4 @@ DEFAULT_HYSTERESIS = 0.3
 DEFAULT_MIN_ON = 8 * 60
 DEFAULT_MIN_OFF = 5 * 60
 
-DEFAULT_PRESETS = {
-    "Night": {"default": 19.5, "overrides": {}},
-    "Away": {"default": 15.0, "overrides": {}},
-}
+DEFAULT_PRESETS = {}

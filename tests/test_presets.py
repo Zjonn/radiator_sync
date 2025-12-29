@@ -1,18 +1,28 @@
 """Test the Radiator Sync global presets."""
 
-from custom_components.radiator_sync.const import DEFAULT_PRESETS
-
 
 async def test_global_preset_aggregation(hass, setup_integration):
     """Test that global preset reflects room presets and vice versa."""
 
     # Check initial state (should be none/Manual)
-    entry_id = setup_integration.entry_id
+    entry = setup_integration
+    entry_id = entry.entry_id
     global_preset_entity = f"select.radiator_sync_{entry_id.lower()}_global_preset"
 
     global_preset = hass.states.get(global_preset_entity)
     assert global_preset is not None
     assert global_preset.state == "none"
+
+    # Add presets manually since they are no longer default
+    new_options = {
+        **entry.options,
+        "presets": {
+            "Night": {"default": 19.5, "overrides": {}},
+            "Away": {"default": 15.0, "overrides": {}},
+        },
+    }
+    hass.config_entries.async_update_entry(entry, options=new_options)
+    await hass.async_block_till_done()
 
     # Apply global preset
     await hass.services.async_call(
@@ -27,7 +37,7 @@ async def test_global_preset_aggregation(hass, setup_integration):
     climate_entities = hass.states.async_entity_ids("climate")
     state_lr = hass.states.get(climate_entities[0])
     assert state_lr.attributes.get("preset_mode") == "Night"
-    assert state_lr.attributes.get("temperature") == DEFAULT_PRESETS["Night"]["default"]
+    assert state_lr.attributes.get("temperature") == 19.5
 
     # Check global state reflects 'Night'
     global_preset = hass.states.get(global_preset_entity)
@@ -54,9 +64,20 @@ async def test_global_preset_aggregation(hass, setup_integration):
 async def test_room_preset_sync(hass, setup_integration):
     """Test that setting a preset on a single room affects global aggregator."""
 
-    entry_id = setup_integration.entry_id
+    entry = setup_integration
+    entry_id = entry.entry_id
     global_preset_entity = f"select.radiator_sync_{entry_id.lower()}_global_preset"
     climate_entities = hass.states.async_entity_ids("climate")
+
+    # Add presets manually
+    new_options = {
+        **entry.options,
+        "presets": {
+            "Night": {"default": 19.5, "overrides": {}},
+        },
+    }
+    hass.config_entries.async_update_entry(entry, options=new_options)
+    await hass.async_block_till_done()
 
     # 1. Manually set all rooms to Night one by one
     for entity_id in climate_entities:
@@ -77,7 +98,7 @@ async def test_preset_room_override(hass, setup_integration):
     """Test that room-specific overrides work."""
     entry = setup_integration
 
-    # Update config entry with an override for 'Living Room'
+    # Update config entry with presets and an override for 'Living Room'
     new_options = {
         **entry.options,
         "presets": {"Night": {"default": 19.5, "overrides": {"Living Room": 22.5}}},

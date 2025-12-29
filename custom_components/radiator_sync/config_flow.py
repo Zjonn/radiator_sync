@@ -40,7 +40,7 @@ class RadiatorSyncConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_create_entry(
                 title="RadiatorSync",
                 data=data,
-                options={CONF_ROOMS: {}, CONF_PRESETS: DEFAULT_PRESETS},
+                options={CONF_ROOMS: {}, CONF_PRESETS: {}},
             )
 
         schema = vol.Schema(

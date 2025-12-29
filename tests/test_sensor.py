@@ -10,7 +10,7 @@ async def test_sensors(hass, setup_integration):
     # Unless target_temp was set to something that causes 50% demand relative to 20.0
     # Living room is set to 21.0, current 20.0. ΔT = 1.0.
     # MAX_DELTA = 2.0. So 1.0 / 2.0 = 50%.
-    assert state.state == "50.0"
+    assert state.state == "50"
 
     # Check room heat demand sensor
     state = hass.states.get("sensor.living_room_heat_demand")

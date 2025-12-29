@@ -42,10 +42,7 @@ async def test_form(hass):
     }
     assert result2["options"] == {
         "rooms": {},
-        "presets": {
-            "Night": {"default": 19.5, "overrides": {}},
-            "Away": {"default": 15.0, "overrides": {}},
-        },
+        "presets": {},
     }
     assert len(mock_setup_entry.mock_calls) == 1
 

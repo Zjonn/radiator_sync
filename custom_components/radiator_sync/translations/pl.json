@@ -72,33 +72,33 @@
         }
       },
       "manage_presets": {
-        "title": "Zarządzaj ustawieniami",
-        "description": "Dodaj, edytuj lub usuń globalne ustawienia temperatury.",
+        "title": "Zarządzaj presetami",
+        "description": "Dodaj, edytuj lub usuń globalne presety temperatury.",
         "data": {
           "preset_action": "Działanie"
         }
       },
       "add_preset": {
-        "title": "Dodaj ustawienie",
-        "description": "Zdefiniuj nowe ustawienie temperatury.",
+        "title": "Dodaj preset",
+        "description": "Zdefiniuj nowy preset temperatury. Możesz opcjonalnie nadpisać wartość dla konkretnych pomieszczeń.",
         "data": {
           "name": "Nazwa",
-          "temperature": "Temperatura"
+          "temperature": "Domyślna temperatura"
         }
       },
       "edit_preset": {
-        "title": "Edytuj ustawienie",
-        "description": "Zmień istniejące ustawienie.",
+        "title": "Edytuj preset",
+        "description": "Zmień istniejący preset i jego nadpisania dla pomieszczeń.",
         "data": {
-          "name": "Ustawienie",
-          "temperature": "Temperatura"
+          "name": "Preset",
+          "temperature": "Domyślna temperatura"
         }
       },
       "remove_preset": {
-        "title": "Usuń ustawienie",
-        "description": "Wybierz ustawienie do usunięcia.",
+        "title": "Usuń preset",
+        "description": "Wybierz preset do usunięcia.",
         "data": {
-          "name": "Ustawienie"
+          "name": "Preset"
         }
       }
     }

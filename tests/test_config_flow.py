@@ -42,7 +42,10 @@ async def test_form(hass):
     }
     assert result2["options"] == {
         "rooms": {},
-        "presets": {"Away": 15.0, "Night": 19.5},
+        "presets": {
+            "Night": {"default": 19.5, "overrides": {}},
+            "Away": {"default": 15.0, "overrides": {}},
+        },
     }
     assert len(mock_setup_entry.mock_calls) == 1
 
@@ -211,7 +214,7 @@ async def test_options_flow_manage_presets(hass):
         user_input={"name": "Night", "temperature": 18.5},
     )
     assert result["type"] == data_entry_flow.FlowResultType.CREATE_ENTRY
-    assert result["data"]["presets"]["Night"] == 18.5
+    assert result["data"]["presets"]["Night"] == {"default": 18.5, "overrides": {}}
 
     # Edit preset
     result = await hass.config_entries.options.async_init(config_entry.entry_id)
@@ -232,7 +235,7 @@ async def test_options_flow_manage_presets(hass):
         user_input={"name": "Night", "temperature": 19.0},
     )
     assert result["type"] == data_entry_flow.FlowResultType.CREATE_ENTRY
-    assert result["data"]["presets"]["Night"] == 19.0
+    assert result["data"]["presets"]["Night"] == {"default": 19.0, "overrides": {}}
 
     # Remove preset
     result = await hass.config_entries.options.async_init(config_entry.entry_id)
@@ -250,6 +253,43 @@ async def test_options_flow_manage_presets(hass):
     )
     assert result["type"] == data_entry_flow.FlowResultType.CREATE_ENTRY
     assert "Night" not in result["data"]["presets"]
+
+
+async def test_options_flow_preset_with_override(hass):
+    """Test adding a preset with a room override via options flow."""
+    config_entry = MockConfigEntry(
+        version=1,
+        domain=DOMAIN,
+        title="RadiatorSync",
+        data={"heater": "switch.test_heater"},
+        options={
+            "rooms": {"Living Room": {CONF_NAME: "Living Room"}},
+            "presets": {"Away": {"default": 15.0, "overrides": {}}},
+        },
+        source=config_entries.SOURCE_USER,
+        entry_id="test_id",
+    )
+    config_entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(config_entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={"operation": "manage_presets"},
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={"preset_action": "add"},
+    )
+    # The form should now contain 'override_Living Room'
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={"name": "Night", "temperature": 18.5, "override_Living Room": 20.5},
+    )
+    assert result["type"] == data_entry_flow.FlowResultType.CREATE_ENTRY
+    assert result["data"]["presets"]["Night"] == {
+        "default": 18.5,
+        "overrides": {"Living Room": 20.5},
+    }
 
 
 async def test_options_flow_errors(hass):

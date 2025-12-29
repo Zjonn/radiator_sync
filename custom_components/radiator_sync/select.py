@@ -4,7 +4,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.components.select import SelectEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, CONF_PRESETS, DEFAULT_PRESETS
+from .const import DOMAIN, CONF_PRESETS
 from .heater.entities import HeaterModeSelect
 from .coordinator import RadiatorSyncCoordinator
 

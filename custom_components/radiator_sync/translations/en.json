@@ -84,6 +84,9 @@
         "data": {
           "name": "Name",
           "temperature": "Default temperature"
+        },
+        "data_description": {
+          "temperature": "This value will be used for all rooms unless overridden below."
         }
       },
       "edit_preset": {
@@ -92,6 +95,9 @@
         "data": {
           "name": "Preset",
           "temperature": "Default temperature"
+        },
+        "data_description": {
+          "temperature": "This value will be used for all rooms unless overridden below."
         }
       },
       "remove_preset": {
@@ -136,36 +142,6 @@
         "state": {
           "none": "Manual"
         }
-      }
-    }
-  },
-  "entity": {
-    "sensor": {
-      "room_heat_demand": {
-        "name": "Heat Demand"
-      },
-      "heater_heat_demand": {
-        "name": "Heater Heat Demand"
-      }
-    },
-    "climate": {
-      "room_climate": {
-        "name": "Radiator"
-      }
-    },
-    "number": {
-      "heater_threshold": {
-        "name": "Heater Threshold Heat Demand"
-      }
-    },
-    "binary_sensor": {
-      "heater_active": {
-        "name": "Heater Active"
-      }
-    },
-    "select": {
-      "heater_mode": {
-        "name": "Heater Mode"
       }
     }
   },

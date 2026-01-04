@@ -366,7 +366,10 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
                 vol.Optional(f"override_{room_name}", default=overrides.get(room_name))
             ] = selector.NumberSelector(
                 selector.NumberSelectorConfig(
-                    min=5, max=30, step=0.5, mode=selector.NumberSelectorMode.BOX
+                    min=5,
+                    max=30,
+                    step=0.5,
+                    mode=selector.NumberSelectorMode.BOX,
                 )
             )
         return vol.Schema(schema_dict)

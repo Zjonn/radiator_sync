@@ -309,7 +309,9 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
             default_temp = user_input["temperature"]
             overrides = {}
             for room_name in self.rooms:
-                if (val := user_input.get(f"override_{room_name}")) is not None and val > 0:
+                if (
+                    val := user_input.get(f"override_{room_name}")
+                ) is not None and val > 0:
                     overrides[room_name] = val
 
             self.presets[name] = {"default": default_temp, "overrides": overrides}
@@ -362,7 +364,9 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
         for room_name in self.rooms:
             # Add optional overrides for each room
             schema_dict[
-                vol.Optional(f"override_{room_name}", default=overrides.get(room_name, 0.0))
+                vol.Optional(
+                    f"override_{room_name}", default=overrides.get(room_name, 0.0)
+                )
             ] = selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     min=0, max=30, step=0.1, mode=selector.NumberSelectorMode.BOX

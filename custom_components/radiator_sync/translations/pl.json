@@ -80,13 +80,10 @@
       },
       "add_preset": {
         "title": "Dodaj preset",
-        "description": "Zdefiniuj nowy preset temperatury. Możesz opcjonalnie nadpisać wartość dla konkretnych pomieszczeń.",
+        "description": "Zdefiniuj nowy preset temperatury. Możesz opcjonalnie nadpisać wartość dla konkretnych pomieszczeń. Pozostaw równe 0, aby użyć domyślnej temperatury.",
         "data": {
           "name": "Nazwa",
           "temperature": "Domyślna temperatura"
-        },
-        "data_description": {
-          "temperature": "Ta wartość będzie używana dla wszystkich pokoi, chyba że zostanie nadpisana poniżej."
         }
       },
       "edit_preset": {
@@ -94,10 +91,7 @@
         "description": "Zmień istniejący preset i jego nadpisania dla pomieszczeń.",
         "data": {
           "name": "Preset",
-          "temperature": "Domyślna temperatura"
-        },
-        "data_description": {
-          "temperature": "Ta wartość będzie używana dla wszystkich pokoi, chyba że zostanie nadpisana poniżej."
+          "temperature": "Domyślna temperatura",
         }
       },
       "remove_preset": {

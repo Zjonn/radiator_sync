@@ -279,8 +279,8 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
             default_temp = user_input["temperature"]
             overrides = {}
             for room_name in self.rooms:
-                val_key = f"override_{room_name}"
-                if (val := user_input.get(val_key)) is not None and val > 0:
+                key = f"override_{room_name}"
+                if (val := user_input.get(key)) is not None and val > 0:
                     overrides[room_name] = val
 
             self.presets[name] = {"default": default_temp, "overrides": overrides}
@@ -309,9 +309,8 @@ class RadiatorSyncOptionsFlow(config_entries.OptionsFlow):
             default_temp = user_input["temperature"]
             overrides = {}
             for room_name in self.rooms:
-                if (
-                    val := user_input.get(f"override_{room_name}")
-                ) is not None and val > 0:
+                key = f"override_{room_name}"
+                if (val := user_input.get(key)) is not None and val > 0:
                     overrides[room_name] = val
 
             self.presets[name] = {"default": default_temp, "overrides": overrides}

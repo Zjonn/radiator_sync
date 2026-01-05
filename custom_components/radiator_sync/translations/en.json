@@ -80,7 +80,7 @@
       },
       "add_preset": {
         "title": "Add Preset",
-        "description": "Define a new temperature preset. You can optionally override the value for specific rooms.",
+        "description": "Define a new temperature preset. You can optionally override the value for specific rooms. Keep it at 0 to use the default temperature.",
         "data": {
           "name": "Name",
           "temperature": "Default temperature"
@@ -136,36 +136,6 @@
         "state": {
           "none": "Manual"
         }
-      }
-    }
-  },
-  "entity": {
-    "sensor": {
-      "room_heat_demand": {
-        "name": "Heat Demand"
-      },
-      "heater_heat_demand": {
-        "name": "Heater Heat Demand"
-      }
-    },
-    "climate": {
-      "room_climate": {
-        "name": "Radiator"
-      }
-    },
-    "number": {
-      "heater_threshold": {
-        "name": "Heater Threshold Heat Demand"
-      }
-    },
-    "binary_sensor": {
-      "heater_active": {
-        "name": "Heater Active"
-      }
-    },
-    "select": {
-      "heater_mode": {
-        "name": "Heater Mode"
       }
     }
   },

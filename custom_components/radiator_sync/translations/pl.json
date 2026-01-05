@@ -91,7 +91,7 @@
         "description": "Zmień istniejący preset i jego nadpisania dla pomieszczeń.",
         "data": {
           "name": "Preset",
-          "temperature": "Domyślna temperatura",
+          "temperature": "Domyślna temperatura"
         }
       },
       "remove_preset": {

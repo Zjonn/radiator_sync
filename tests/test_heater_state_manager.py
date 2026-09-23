@@ -71,7 +71,9 @@ def mock_call_later(monkeypatch):
     return scheduled
 
 
-async def test_turn_on_immediately_when_no_prior_off(hass, manager, switch_calls, mock_call_later):
+async def test_turn_on_immediately_when_no_prior_off(
+    hass, manager, switch_calls, mock_call_later
+):
     manager.last_off = None
 
     await manager.apply_heat_demand(20.0)
@@ -83,7 +85,9 @@ async def test_turn_on_immediately_when_no_prior_off(hass, manager, switch_calls
     assert mock_call_later == []
 
 
-async def test_turn_off_immediately_when_min_on_elapsed(hass, manager, switch_calls, mock_call_later):
+async def test_turn_off_immediately_when_min_on_elapsed(
+    hass, manager, switch_calls, mock_call_later
+):
     manager.is_running = True
     manager.last_on = datetime.now() - timedelta(seconds=manager.min_on_seconds + 5)
 
@@ -96,7 +100,9 @@ async def test_turn_off_immediately_when_min_on_elapsed(hass, manager, switch_ca
     assert mock_call_later == []
 
 
-async def test_stuck_on_bug_is_fixed_by_scheduled_reeval(hass, manager, switch_calls, mock_call_later):
+async def test_stuck_on_bug_is_fixed_by_scheduled_reeval(
+    hass, manager, switch_calls, mock_call_later
+):
     """Regression test for the overnight incident.
 
     Demand drops to 0 just inside the min-on window and then never changes
@@ -136,7 +142,9 @@ async def test_stuck_on_bug_is_fixed_by_scheduled_reeval(hass, manager, switch_c
     assert switch_calls[0].data == {"entity_id": "switch.test_heater"}
 
 
-async def test_min_off_window_defers_and_reschedules_turn_on(hass, manager, switch_calls, mock_call_later):
+async def test_min_off_window_defers_and_reschedules_turn_on(
+    hass, manager, switch_calls, mock_call_later
+):
     manager.last_off = datetime.now()  # heater just turned off
 
     await manager.apply_heat_demand(20.0)
@@ -155,7 +163,9 @@ async def test_min_off_window_defers_and_reschedules_turn_on(hass, manager, swit
     assert switch_calls[0].data == {"entity_id": "switch.test_heater"}
 
 
-async def test_override_mode_skips_evaluation(hass, manager, switch_calls, mock_call_later):
+async def test_override_mode_skips_evaluation(
+    hass, manager, switch_calls, mock_call_later
+):
     manager._override_mode = "on"
     manager.is_running = False
 

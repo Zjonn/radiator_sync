@@ -2,7 +2,7 @@ from typing import Optional, Callable, Any
 from datetime import datetime
 
 from homeassistant.core import callback
-from homeassistant.helpers.event import async_track_state_change_event
+from homeassistant.helpers.event import async_track_state_change_event, async_call_later
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_registry import async_get as async_get_entity_reg
 from homeassistant.helpers.device_registry import async_get as async_get_dev_reg
@@ -35,6 +35,7 @@ class HeaterStateManager:
         self._override_mode = "auto"
 
         self._unsub: Optional[Callable] = None
+        self._pending_reeval_unsub: Optional[Callable] = None
 
     def load_state(self, state: dict):
         """Load state from persistence."""
@@ -105,15 +106,17 @@ class HeaterStateManager:
     async def apply_heat_demand(self, demand: float) -> None:
         """Turn boiler on/off based on demand (0–100%) with anti-cycling logic."""
 
-        if self.heat_demand == demand:
-            return
-
+        demand_changed = self.heat_demand != demand
         self.heat_demand = demand
-        await self._persist()
-        await self.notify()
+
+        if demand_changed:
+            await self._persist()
+            await self.notify()
 
         if self._override_mode != "auto":
             return  # ignore heat demand when overridden
+
+        self._cancel_pending_reeval()
 
         now = datetime.now()
         should_run = (demand >= self.threshold_heat_demand) or (
@@ -124,7 +127,8 @@ class HeaterStateManager:
             if self.last_off is not None:
                 off_time = (now - self.last_off).total_seconds()
                 if off_time < self.min_off_seconds:
-                    # Still in anti-short-cycle off window
+                    # Still in anti-short-cycle off window; re-check once it elapses
+                    self._schedule_reeval(self.min_off_seconds - off_time)
                     return
 
             await self.coordinator.hass.services.async_call(
@@ -136,13 +140,34 @@ class HeaterStateManager:
             if self.last_on is not None:
                 on_time = (now - self.last_on).total_seconds()
                 if on_time < self.min_on_seconds:
-                    # Still in anti-short-cycle on window
+                    # Still in anti-short-cycle on window; re-check once it elapses
+                    self._schedule_reeval(self.min_on_seconds - on_time)
                     return
 
             await self.coordinator.hass.services.async_call(
                 "switch", "turn_off", {"entity_id": self.heater_name}, blocking=False
             )
             return
+
+    def _cancel_pending_reeval(self) -> None:
+        """Cancel a scheduled re-evaluation of a deferred on/off decision, if any."""
+        if self._pending_reeval_unsub is not None:
+            self._pending_reeval_unsub()
+            self._pending_reeval_unsub = None
+
+    def _schedule_reeval(self, delay_seconds: float) -> None:
+        """Re-run the on/off decision once the remaining anti-cycle window elapses."""
+
+        @callback
+        def _reeval(_now):
+            self._pending_reeval_unsub = None
+            self.coordinator.hass.async_create_task(
+                self.apply_heat_demand(self.heat_demand)
+            )
+
+        self._pending_reeval_unsub = async_call_later(
+            self.coordinator.hass, max(delay_seconds, 0), _reeval
+        )
 
     # ----------------------------
     # Listener registration
@@ -165,6 +190,9 @@ class HeaterStateManager:
         if now_running and not self.is_running:
             # Started
             self.last_on = datetime.now()
+        elif not now_running and self.is_running:
+            # Stopped
+            self.last_off = datetime.now()
 
         self.is_running = now_running
         await self._persist()
@@ -198,3 +226,4 @@ class HeaterStateManager:
         if self._unsub:
             self._unsub()
             self._unsub = None
+        self._cancel_pending_reeval()
